@@ -4,6 +4,8 @@ Boshlang‘ich sinf (1–4) o‘qituvchisi uchun **doska yoki proyektorda** ko�
 
 > **Diqqat: dars mazmuni — qoralama.** 14 ta mavzuning hammasi namuna sifatida yozilgan. Har bir mavzuni darsda ishlatishdan oldin o‘qituvchi tekshirib chiqishi kerak. Mazmun rasmiy o‘quv dasturiga mos ekani **da’vo qilinmaydi**.
 
+**Jonli manzil:** <https://sinf-sahnasi.vercel.app> — uyda internet bor paytda bir marta oching va ilova sifatida o‘rnating.
+
 ## Nimalar bor
 
 - **14 ta mavzu** (1–4-sinf: matematika, ona tili, atrofimizdagi olam), har birida 6–10 sahna.
