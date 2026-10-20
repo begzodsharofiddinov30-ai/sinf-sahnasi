@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 import { AppRoutes, ROUTER_FUTURE } from '../src/app/App';
 import { SettingsProvider } from '../src/app/SettingsProvider';
+import { topicsFor } from '../src/content/catalog';
 import { ToolsProvider } from '../src/tools/ToolsProvider';
 
 function renderAt(path: string) {
@@ -28,7 +29,7 @@ describe('sahifalar', () => {
   it('fan sahifasida qidiruv va sevimlilar ishlaydi', async () => {
     renderAt('/sinf/1/matematika');
     const user = userEvent.setup();
-    expect(screen.getAllByRole('listitem')).toHaveLength(4);
+    expect(screen.getAllByRole('listitem')).toHaveLength(topicsFor(1, 'matematika').length);
     await user.type(screen.getByRole('searchbox'), "qo'shish");
     expect(screen.getAllByRole('listitem')).toHaveLength(1);
     await user.clear(screen.getByRole('searchbox'));

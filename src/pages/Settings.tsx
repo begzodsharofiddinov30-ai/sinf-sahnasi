@@ -2,6 +2,8 @@
 import { useId, useState, type ReactNode } from 'react';
 import { Layout } from '../app/Layout';
 import { useSettings } from '../app/SettingsProvider';
+import { nameError } from '../app/teacher';
+import { useTeacher } from '../app/TeacherProvider';
 import { BigButton, BigLink } from '../components/BigButton';
 import { Icon } from '../components/Icon';
 import { playSfx } from '../lib/audio';
@@ -29,6 +31,74 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
+function TeacherSection() {
+  const { teacher, register, signOut } = useTeacher();
+  const [edit, setEdit] = useState(false);
+  const [first, setFirst] = useState(teacher?.firstName ?? '');
+  const [last, setLast] = useState(teacher?.lastName ?? '');
+  const [confirmOut, setConfirmOut] = useState(false);
+  const err = nameError(first, 'Ism') ?? nameError(last, 'Familiya');
+  if (!teacher) return null;
+  const input = 'min-h-tap rounded-xl2 border-[0.15rem] border-line bg-surface px-[1rem] text-body font-bold outline-none focus:border-primary';
+  return (
+    <Section title="O‘qituvchi">
+      <div className="flex flex-col gap-[1rem] rounded-xl2 bg-surface p-[1.8rem] ring-[0.15rem] ring-line">
+        {edit ? (
+          <>
+            <div className="flex flex-wrap gap-[1rem]">
+              <input aria-label="Ism" value={first} onChange={(e) => setFirst(e.target.value)} className={input} />
+              <input aria-label="Familiya" value={last} onChange={(e) => setLast(e.target.value)} className={input} />
+            </div>
+            {err && <p className="text-meta font-bold text-warn">{err}</p>}
+            <div className="flex gap-[1rem]">
+              <BigButton
+                size="md"
+                disabled={!!err}
+                onClick={() => {
+                  register(first, last);
+                  setEdit(false);
+                }}
+              >
+                Saqlash
+              </BigButton>
+              <BigButton size="md" variant="ghost" onClick={() => setEdit(false)}>
+                Bekor qilish
+              </BigButton>
+            </div>
+          </>
+        ) : (
+          <div className="flex flex-wrap items-center gap-[1rem]">
+            <p className="flex-1 text-lead font-black">
+              {teacher.firstName} {teacher.lastName}
+            </p>
+            <BigButton size="md" variant="secondary" onClick={() => setEdit(true)}>
+              Ismni o‘zgartirish
+            </BigButton>
+          </div>
+        )}
+        {confirmOut ? (
+          <div className="flex flex-wrap items-center gap-[1rem]">
+            <span className="text-meta font-bold">Chiqilsinmi? Ismingiz o‘chadi (sinf ro‘yxati va sozlamalar qoladi).</span>
+            <BigButton size="md" variant="accent" onClick={signOut}>
+              Ha, chiqish
+            </BigButton>
+            <BigButton size="md" variant="ghost" onClick={() => setConfirmOut(false)}>
+              Yo‘q
+            </BigButton>
+          </div>
+        ) : (
+          <div>
+            <BigButton size="md" variant="ghost" onClick={() => setConfirmOut(true)}>
+              Chiqish (boshqa o‘qituvchi uchun)
+            </BigButton>
+          </div>
+        )}
+        <p className="text-meta text-ink-soft">Ism faqat shu kompyuterda saqlanadi. Parol yo‘q, hech qayerga yuborilmaydi.</p>
+      </div>
+    </Section>
+  );
+}
+
 export function SettingsPage() {
   const { settings, update, resetAll } = useSettings();
   const volId = useId();
@@ -45,8 +115,15 @@ export function SettingsPage() {
       </div>
 
       <div className="mt-[2rem] flex max-w-[70rem] flex-col gap-[2.5rem]">
+        <TeacherSection />
         <Section title="Ovoz">
           <Toggle label="Ovoz" checked={settings.soundOn} onChange={(v) => update({ soundOn: v })} />
+          <Toggle
+            label="Animatsiya ovozlari"
+            hint="Sahna almashishi, yangi qadam, sakrash va bayram ovozlari. O‘chirsangiz, faqat javob ovozlari qoladi."
+            checked={settings.animSounds}
+            onChange={(v) => update({ animSounds: v })}
+          />
           <div className="flex min-h-tap items-center justify-between gap-6 rounded-xl2 bg-surface px-[1.8rem] py-[1rem] ring-[0.15rem] ring-line">
             <label htmlFor={volId} className="text-body font-bold">
               Ovoz balandligi: {Math.round(settings.volume * 100)}%

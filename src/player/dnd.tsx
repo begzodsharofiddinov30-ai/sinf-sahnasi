@@ -1,6 +1,7 @@
 // Sudrab tashlash: sichqoncha, sensor ekran va qalam uchun bitta kod (Pointer Events).
 // Muqobil yo'l: narsani bosib tanlash, keyin joyini bosish (klaviatura ham shunday ishlaydi).
 import { useCallback, useRef, type ReactNode } from 'react';
+import { playSfx } from '../lib/audio';
 
 export function useDropZones() {
   const zones = useRef(new Map<string, HTMLElement>());
@@ -72,6 +73,7 @@ export function DragItem({ onTap, onDrop, disabled, selected, label, className =
         const dx = e.clientX - d.x0;
         const dy = e.clientY - d.y0;
         if (!d.active && Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
+        if (!d.active) playSfx('lift');
         d.active = true;
         el.style.transition = 'none';
         el.style.transform = `translate(${dx}px, ${dy}px) scale(1.08)`;

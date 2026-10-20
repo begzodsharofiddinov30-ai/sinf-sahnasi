@@ -14,7 +14,10 @@ export function RecapScene({ scene, step, revealed, onNext }: SceneProps<RecapDa
   const finished = upTo === last;
 
   useEffect(() => {
-    if (finished) playSfx('chime');
+    if (finished) {
+      playSfx('chime');
+      playSfx('sparkle');
+    }
   }, [finished]);
 
   return (

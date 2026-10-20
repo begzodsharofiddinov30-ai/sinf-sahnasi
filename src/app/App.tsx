@@ -11,6 +11,7 @@ import { TopicPage } from '../pages/Topic';
 import { ToolsProvider } from '../tools/ToolsProvider';
 import { PwaProvider } from './PwaProvider';
 import { SettingsProvider } from './SettingsProvider';
+import { TeacherGate, TeacherProvider } from './TeacherProvider';
 
 const PlayerPage = lazy(() => import('../pages/PlayerPage').then((m) => ({ default: m.PlayerPage })));
 const WorksheetPage = lazy(() => import('../pages/Worksheet').then((m) => ({ default: m.WorksheetPage })));
@@ -50,10 +51,14 @@ export function App() {
     <PwaProvider>
       <SettingsProvider>
         <ToolsProvider>
-          <HashRouter future={ROUTER_FUTURE}>
-            <AppRoutes />
-          </HashRouter>
-          <div id={LIVE_REGION_ID} className="sr-only" aria-live="polite" aria-atomic="true" />
+          <TeacherProvider>
+            <TeacherGate>
+              <HashRouter future={ROUTER_FUTURE}>
+                <AppRoutes />
+              </HashRouter>
+            </TeacherGate>
+            <div id={LIVE_REGION_ID} className="sr-only" aria-live="polite" aria-atomic="true" />
+          </TeacherProvider>
         </ToolsProvider>
       </SettingsProvider>
     </PwaProvider>

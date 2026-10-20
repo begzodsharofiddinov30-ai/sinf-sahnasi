@@ -1,10 +1,11 @@
 // Dars pleyeri: to'liq ekran, sahnalar, boshqaruv paneli
 import { AnimatePresence, motion } from 'framer-motion';
-import { useCallback, useEffect, useMemo, useReducer, useState, type PointerEvent } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type PointerEvent } from 'react';
 import { FullscreenToggle } from '../components/FullscreenToggle';
 import { Icon } from '../components/Icon';
 import { ProgressDots } from '../components/ProgressDots';
 import type { Lesson } from '../content/schema';
+import { playSfx } from '../lib/audio';
 import { exitFullscreen, isFullscreen, toggleFullscreen } from '../lib/fullscreen';
 import { formatMs } from '../tools/logic';
 import { ToolsPanel, type ToolTab } from '../tools/ToolsPanel';
@@ -55,6 +56,15 @@ export function Player({ lesson, title, initialScene = 0, onExit, onSceneChange 
   useEffect(() => {
     onSceneChange?.(state.index);
   }, [state.index, onSceneChange]);
+
+  // Animatsiyaga hamroh ovozlar: sahna almashsa "shuv", yangi qadam ochilsa "tin"
+  const prev = useRef({ index: state.index, step: state.step });
+  useEffect(() => {
+    const p = prev.current;
+    if (state.index !== p.index) playSfx('swish');
+    else if (state.step > p.step && !state.revealed) playSfx('step');
+    prev.current = { index: state.index, step: state.step };
+  }, [state.index, state.step, state.revealed]);
 
   const [tools, setTools] = useState<ToolTab | null>(null);
   const [lastTab, setLastTab] = useState<ToolTab>('picker');

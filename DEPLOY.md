@@ -37,13 +37,19 @@ Bu qo‘llanma loyihani internetga chiqarish uchun. Bir marta sozlansa, keyingi 
 - O‘qituvchining o‘rnatilgan ilovasi yangi versiyani internet bo‘lganda o‘zi yuklaydi va **“Yangi versiya — yangilash”** tugmasini ko‘rsatadi. Darsdan oldin uyda ilovani ochib, yangilashni tavsiya qiling.
 - Versiya raqami `package.json` dagi `version` maydonidan olinadi va **Sozlamalar** sahifasida ko‘rinadi. Har bir muhim o‘zgarishda uni oshiring (masalan, `1.0.0` → `1.1.0`).
 
-## 4. `vercel.json` nima qiladi
+## 4. Avtomatik tekshiruvlar (GitHub Actions)
+
+- `.github/workflows/ci.yml` — har push’da `npm run check` va brauzer testlari.
+- `.github/workflows/monitor.yml` — har 6 soatda jonli saytni tekshiradi (`E2E_BASE_URL`). Xato bo‘lsa, GitHub email yuboradi. Qo‘lda ishga tushirish: GitHub → **Actions** → **Jonli sayt kuzatuvi** → **Run workflow**.
+- Boshqa manzilga joylasangiz, `monitor.yml` dagi `E2E_BASE_URL` ni o‘zgartiring.
+
+## 5. `vercel.json` nima qiladi
 
 - Barcha manzillarni `index.html` ga yo‘naltiradi (xavfsizlik to‘ri; ilova `#/` manzillardan foydalanadi).
 - **Content-Security-Policy:** sayt faqat o‘z fayllarini yuklay oladi — tashqi skript, shrift, rasm, analitika yoki boshqa internet so‘rovlari brauzer tomonidan bloklanadi.
 - `sw.js` va `index.html` keshlanmaydi (yangilanishlar tez yetib keladi), `assets/` fayllari esa uzoq muddat keshlanadi.
 
-## 5. Joylashdan keyin tekshirish
+## 6. Joylashdan keyin tekshirish
 
 1. Saytni oching → **Sozlamalar › Tekshiruv**: “Oflayn rejim” ✓ bo‘lishi kerak.
 2. Edge/Chrome’da ilovani o‘rnating (**Ilovani o‘rnatish** sahifasi).

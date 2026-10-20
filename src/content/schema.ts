@@ -24,6 +24,22 @@ export const PICTURE_NAMES = [
   'suv',
   'muz',
   'choynak',
+  'doira',
+  'kvadrat',
+  'uchburchak',
+  'tortburchak',
+  'mushuk',
+  'it',
+  'sigir',
+  'quyon',
+  'tulki',
+  'svetofor',
+  'sayyora',
+  'sovun',
+  'shisha',
+  'qogoz',
+  'tanga',
+  'oy',
 ] as const;
 export type PictureName = (typeof PICTURE_NAMES)[number];
 

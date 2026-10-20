@@ -1,6 +1,7 @@
 // Ish varag'i: darsdan avtomatik tuziladi, A4 ga chop etiladi
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { useTeacher } from '../app/TeacherProvider';
 import { BigButton } from '../components/BigButton';
 import { ClockFace } from '../components/ClockFace';
 import { Icon } from '../components/Icon';
@@ -178,6 +179,7 @@ export function WorksheetPage() {
   const topic = findTopic(id);
   const state = useLesson(topic ? id : null);
   const [answers, setAnswers] = useState(false);
+  const { teacher } = useTeacher();
   const ws = useMemo(() => (state.status === 'ready' ? buildWorksheet(state.lesson) : null), [state]);
 
   if (!topic || state.status === 'missing') return <NotFoundPage message="Bu mavzu topilmadi." />;
@@ -207,6 +209,7 @@ export function WorksheetPage() {
           <h1 className="mt-[4mm] text-[20pt] font-black">{topic.title}</h1>
           <p className="text-[11pt]">
             {topic.grade}-sinf · Ish varag‘i{answers ? ' · JAVOBLAR' : ''}
+            {teacher ? ` · O‘qituvchi: ${teacher.firstName} ${teacher.lastName}` : ''}
           </p>
         </header>
         {!ws ? (

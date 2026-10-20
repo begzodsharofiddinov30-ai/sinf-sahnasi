@@ -1,5 +1,7 @@
 // Yengil "bayram" effekti: yulduzchalar tarqaladi (faqat transform/opacity)
 import { motion } from 'framer-motion';
+import { useEffect } from 'react';
+import { playSfx } from '../lib/audio';
 
 const STARS = Array.from({ length: 12 }, (_, i) => {
   const a = (i / 12) * Math.PI * 2;
@@ -7,6 +9,9 @@ const STARS = Array.from({ length: 12 }, (_, i) => {
 });
 
 export function Celebration({ show }: { show: boolean }) {
+  useEffect(() => {
+    if (show) playSfx('sparkle');
+  }, [show]);
   if (!show) return null;
   return (
     <div className="pointer-events-none absolute inset-0 grid place-items-center overflow-hidden" aria-hidden="true">

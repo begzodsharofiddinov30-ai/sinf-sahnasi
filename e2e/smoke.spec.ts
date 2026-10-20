@@ -1,23 +1,11 @@
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
+import { CATALOG } from '../src/content/catalog';
+import { topicId } from '../src/content/schema';
 
-const LESSONS = [
-  '1/matematika/sonlar-1-10',
-  '1/matematika/kop-kam',
-  '1/matematika/qoshish-10',
-  '1/matematika/ayirish-10',
-  '1/ona-tili/harf-tovush',
-  '1/ona-tili/bogin',
-  '1/ona-tili/soz-yasash',
-  '2/matematika/onlik-birlik',
-  '2/matematika/ikki-xonali-qoshish',
-  '2/matematika/soat',
-  '3/matematika/kopaytirish-2-3',
-  '3/matematika/bolish',
-  '4/olam/fasllar',
-  '4/olam/suv-aylanishi',
-];
+// Katalogdagi barcha darslar
+const LESSONS = CATALOG.map(topicId);
 
 function watchErrors(page: Page): string[] {
   const errors: string[] = [];
@@ -40,6 +28,29 @@ async function playThrough(page: Page) {
   await expect(page.locator('header p').first()).toContainText(`${total} / ${total}`);
 }
 
+test.describe('ro‘yxatdan o‘tish', () => {
+  test('ism-familiya bilan kiradi, parol so‘ralmaydi', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'Xush kelibsiz!' })).toBeVisible();
+    await expect(page.locator('input[type="password"]')).toHaveCount(0);
+    await page.getByLabel('Ismingiz').fill('Dilnoza');
+    await page.getByLabel('Familiyangiz').fill('Karimova');
+    await page.getByRole('button', { name: 'Kirish' }).click();
+    await expect(page.getByText(/Assalomu alaykum, Dilnoza Karimova!/)).toBeVisible();
+    await page.reload();
+    await expect(page.getByText(/Assalomu alaykum, Dilnoza Karimova!/)).toBeVisible();
+  });
+});
+
+// Qolgan testlarda o'qituvchi allaqachon ro'yxatdan o'tgan
+test.beforeEach(async ({ page }, info) => {
+  if (info.titlePath.includes('ro‘yxatdan o‘tish')) return;
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('sinf-sahnasi:teacher'))
+      localStorage.setItem('sinf-sahnasi:teacher', JSON.stringify({ firstName: 'Sinov', lastName: 'O‘qituvchi', since: '2026-01-01' }));
+  });
+});
+
 test('bosh sahifadan darsgacha va oxirigacha', async ({ page }) => {
   const errors = watchErrors(page);
   await page.goto('/');
@@ -53,7 +64,7 @@ test('bosh sahifadan darsgacha va oxirigacha', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test('barcha 14 dars boshidan oxirigacha oʻtadi', async ({ page }) => {
+test('barcha darslar boshidan oxirigacha oʻtadi', async ({ page }) => {
   const errors = watchErrors(page);
   for (const id of LESSONS) {
     await page.goto(`/#/dars/${id}`);

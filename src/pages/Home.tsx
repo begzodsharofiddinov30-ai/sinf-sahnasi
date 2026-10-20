@@ -2,6 +2,7 @@
 import { Link } from 'react-router-dom';
 import { Layout } from '../app/Layout';
 import { useSettings } from '../app/SettingsProvider';
+import { useTeacher } from '../app/TeacherProvider';
 import { Icon } from '../components/Icon';
 import { MASCOT_NAME, Mascot } from '../components/Mascot';
 import { CATALOG, findTopic } from '../content/catalog';
@@ -12,6 +13,7 @@ const GRADE_TONES = ['bg-[#DCE9F7]', 'bg-[#FDE3CC]', 'bg-[#DDF0D5]', 'bg-[#EADCF
 
 export function HomePage() {
   const { lastLesson, favourites } = useSettings();
+  const { teacher } = useTeacher();
   const last = lastLesson ? findTopic(lastLesson.id) : undefined;
   const favTopics = CATALOG.filter((t) => favourites.includes(topicId(t)));
 
@@ -23,7 +25,10 @@ export function HomePage() {
         </span>
         <div>
           <h1 className="text-title font-black">Sinf Sahnasi</h1>
-          <p className="text-body font-bold text-ink-soft">Salom! Men {MASCOT_NAME}man. Qaysi sinf bilan dars o‘tamiz?</p>
+          <p className="text-body font-bold text-ink-soft">
+            {teacher ? `Assalomu alaykum, ${teacher.firstName} ${teacher.lastName}! ` : 'Salom! '}
+            Men {MASCOT_NAME}man. Qaysi sinf bilan dars o‘tamiz?
+          </p>
         </div>
       </section>
 

@@ -4,6 +4,8 @@ import { readJSON } from '../lib/storage';
 export interface Settings {
   soundOn: boolean;
   volume: number;
+  /** Sahna almashishi, qadam, sakrash kabi animatsiya ovozlari */
+  animSounds: boolean;
   /** Darsni boshlashda avtomatik to'liq ekran */
   autoFullscreen: boolean;
   // 4-bosqichda UI qo'shiladi:
@@ -21,6 +23,7 @@ export interface LastLesson {
 export const DEFAULT_SETTINGS: Settings = {
   soundOn: true,
   volume: 0.6,
+  animSounds: true,
   autoFullscreen: true,
   calmMode: false,
   lightMode: false,
@@ -37,6 +40,7 @@ export function sanitizeSettings(raw: unknown): Settings {
   return {
     soundOn: bool('soundOn'),
     volume: num('volume', 0, 1),
+    animSounds: bool('animSounds'),
     autoFullscreen: bool('autoFullscreen'),
     calmMode: bool('calmMode'),
     lightMode: bool('lightMode'),

@@ -67,7 +67,7 @@ Ko‘p sahnalarda `visual` maydoni bor. Turlari:
 | O‘nlik bloklar | `{ kind: 'blocks', tens: 2, ones: 3 }` |
 | Teng guruhlar | `{ kind: 'groups', item: 'olma', groups: 3, each: 2 }` |
 
-**Rasmlar ro‘yxati** (`item`): `olma`, `nok`, `anor`, `uzum`, `yulduz`, `koptok`, `baliq`, `gul`, `qush`, `mashina`, `qalam`, `barg`, `quyosh`, `bulut`, `tomchi`, `kitob`, `daraxt`, `qor`, `suv`, `muz`, `choynak`. Yangi rasm qo‘shish uchun: `src/content/schema.ts` dagi `PICTURE_NAMES` va `src/components/Picture.tsx` (faqat asl yoki CC0 rasm, ASSETS.md ga yozing).
+**Rasmlar ro‘yxati** (`item`): `olma`, `nok`, `anor`, `uzum`, `yulduz`, `koptok`, `baliq`, `gul`, `qush`, `mashina`, `qalam`, `barg`, `quyosh`, `bulut`, `tomchi`, `kitob`, `daraxt`, `qor`, `suv`, `muz`, `choynak`, `doira`, `kvadrat`, `uchburchak`, `tortburchak`, `mushuk`, `it`, `sigir`, `quyon`, `tulki`, `svetofor`, `sayyora`, `sovun`, `shisha`, `qogoz`, `tanga`, `oy`. Yangi rasm qo‘shish uchun: `src/content/schema.ts` dagi `PICTURE_NAMES` va `src/components/Picture.tsx` (faqat asl yoki CC0 rasm, ASSETS.md ga yozing).
 
 ## 5. Har bir sahna turi uchun shablon
 

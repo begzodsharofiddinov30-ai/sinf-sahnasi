@@ -1,0 +1,31 @@
+# Jonli saytni muntazam tekshirish: har 6 soatda.
+# Xato bo'lsa, GitHub repozitoriya egasiga email yuboradi (Actions bildirishnomalari).
+name: Jonli sayt kuzatuvi
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      E2E_BASE_URL: https://sinf-sahnasi.vercel.app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Sayt javob beryaptimi
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$E2E_BASE_URL/")
+          echo "HTTP $code"
+          test "$code" = "200"
+      # Portativ test mahalliy faylni ochadi
+      - run: npm run build:portable
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test

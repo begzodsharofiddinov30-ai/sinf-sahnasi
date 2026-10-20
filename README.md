@@ -2,19 +2,21 @@
 
 Boshlang‘ich sinf (1–4) o‘qituvchisi uchun **doska yoki proyektorda** ko‘rsatiladigan dars sahnalari. O‘qituvchi bitta tugma (yoki prezentatsiya pulti) bilan sahnalarni almashtiradi, bolalar doskaga chiqib mashqlarni bajaradi. Internet yo‘q bo‘lsa ham ishlaydi.
 
-> **Diqqat: dars mazmuni — qoralama.** 14 ta mavzuning hammasi namuna sifatida yozilgan. Har bir mavzuni darsda ishlatishdan oldin o‘qituvchi tekshirib chiqishi kerak. Mazmun rasmiy o‘quv dasturiga mos ekani **da’vo qilinmaydi**.
+> **Diqqat: dars mazmuni — qoralama.** 54 ta mavzuning hammasi namuna sifatida yozilgan. Har bir mavzuni darsda ishlatishdan oldin o‘qituvchi tekshirib chiqishi kerak. Mazmun rasmiy o‘quv dasturiga mos ekani **da’vo qilinmaydi**.
 
 **Jonli manzil:** <https://sinf-sahnasi.vercel.app> — uyda internet bor paytda bir marta oching va ilova sifatida o‘rnating.
 
 ## Nimalar bor
 
-- **14 ta mavzu** (1–4-sinf: matematika, ona tili, atrofimizdagi olam), har birida 6–10 sahna.
+- **54 ta mavzu** (har bir sinfda 12–17 ta: matematika, ona tili, o‘qish, atrofimizdagi olam), har birida 6–10 sahna.
 - **11 xil sahna:** tushuntirish, sanash, javob tanlash, moslashtirish (sudrab olib borish), so‘z yasash, guruhlarga ajratish, son o‘qi, o‘nlik ramka, soat, hikoya, yakun.
 - **O‘qituvchi asboblari:** tasodifiy o‘quvchi (takrorlamasdan), jamoalar hisobi, taymer.
 - **Ish varag‘i:** har bir mavzudan avtomatik tuziladi va A4 ga chop etiladi (javoblari bilan nusxasi ham bor).
 - **Sozlamalar:** ovoz, sokin rejim, yengil rejim (kuchsiz kompyuter uchun), yuqori kontrast, matn o‘lchami, sinf ro‘yxati.
 - **Tekshiruv sahifasi:** darsdan oldin oflayn tayyorlik, ovoz, to‘liq ekran va ekran o‘lchamini tekshiradi.
-- **Maxfiylik:** hisob (login) yo‘q, server yo‘q, internetga hech qanday ma’lumot yuborilmaydi. Sinf ro‘yxati (faqat ismlar) va sozlamalar faqat shu kompyuter brauzerida saqlanadi.
+- **O‘qituvchi ro‘yxatdan o‘tishi:** birinchi ochilishda o‘qituvchi faqat **ism va familiyasini** yozadi — parol ham, hisob ham, email ham yo‘q. Ism salomlashuvda va ish varag‘ida ko‘rinadi; Sozlamalarda o‘zgartiriladi yoki “Chiqish” bilan o‘chiriladi.
+- **Animatsiya ovozlari:** sahna almashishi, yangi qadam, narsani ko‘tarish, sakrash va bayram uchun yumshoq ovozlar (Sozlamalarda alohida o‘chiriladi; sokin rejimda jim).
+- **Maxfiylik:** server yo‘q, internetga hech qanday ma’lumot yuborilmaydi. O‘qituvchi ismi, sinf ro‘yxati (faqat ismlar) va sozlamalar faqat shu kompyuter brauzerida saqlanadi. Boshqa kompyuterda ism qaytadan kiritiladi.
 
 ## Pleyer tugmalari
 
@@ -30,6 +32,15 @@ Boshlang‘ich sinf (1–4) o‘qituvchisi uchun **doska yoki proyektorda** ko�
 | Esc | Maslahat/asboblarni yopish → to‘liq ekrandan chiqish → darsdan chiqish |
 
 Harfli tugmalar klaviatura rus yoki o‘zbek tartibida bo‘lsa ham ishlaydi.
+
+## Sayt muntazam ishlab turishi
+
+- Sayt Vercel’ning statik xostingida joylashgan — server “o‘chib qolmaydi”, uxlamaydi.
+- **GitHub Actions** (`.github/workflows/`):
+  - `ci.yml` — har `git push` da lint, tarkib, barcha testlar, build va brauzer testlari. Xato bo‘lsa — buzilgan versiya ham baribir joylanishi mumkin, shuning uchun GitHub’dagi qizil belgiga qarang.
+  - `monitor.yml` — **har 6 soatda** jonli saytni ochib, darslarni brauzerda o‘tadi. Sayt ishlamay qolsa, GitHub repozitoriy egasiga **email** yuboradi.
+- GitHub ochiq repozitoriyda 60 kun hech qanday o‘zgarish bo‘lmasa, rejali tekshiruvni to‘xtatib qo‘yadi — u holda Actions sahifasida “Enable workflow” ni bosing.
+- O‘rnatilgan ilova esa saytga umuman bog‘liq emas: internet yoki Vercel ishlamasa ham noutbukdagi nusxa ochilaveradi.
 
 ## Uch xil foydalanish usuli
 

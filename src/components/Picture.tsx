@@ -24,6 +24,22 @@ export const PICTURE_LABELS: Record<PictureName, string> = {
   suv: 'suv',
   muz: 'muz',
   choynak: 'choynak',
+  doira: 'doira',
+  kvadrat: 'kvadrat',
+  uchburchak: 'uchburchak',
+  tortburchak: 'to‘rtburchak',
+  mushuk: 'mushuk',
+  it: 'it',
+  sigir: 'sigir',
+  quyon: 'quyon',
+  tulki: 'tulki',
+  svetofor: 'svetofor',
+  sayyora: 'sayyora',
+  sovun: 'sovun',
+  shisha: 'shisha',
+  qogoz: 'qog‘oz',
+  tanga: 'tanga',
+  oy: 'oy',
 };
 
 const SHAPES: Record<PictureName, ReactElement> = {
@@ -188,6 +204,116 @@ const SHAPES: Record<PictureName, ReactElement> = {
       <path d="M24 48q-14 0-14 14t14 12" stroke="#2E6FB7" strokeWidth="6" fill="none" />
     </>
   ),
+  doira: <circle cx="50" cy="50" r="38" fill="#E5484D" stroke="#9E2A2F" strokeWidth="4" />,
+  kvadrat: <rect x="14" y="14" width="72" height="72" rx="4" fill="#3E7BD6" stroke="#1B4A80" strokeWidth="4" />,
+  uchburchak: <path d="M50 12L90 86H10z" fill="#F5B82E" stroke="#B07D0A" strokeWidth="4" strokeLinejoin="round" />,
+  tortburchak: <rect x="6" y="28" width="88" height="44" rx="4" fill="#46A758" stroke="#2D7A3A" strokeWidth="4" />,
+  mushuk: (
+    <>
+      <ellipse cx="50" cy="74" rx="26" ry="18" fill="#9AA4B2" />
+      <path d="M28 30l4-18 14 12zM72 30l-4-18-14 12z" fill="#9AA4B2" />
+      <circle cx="50" cy="44" r="24" fill="#9AA4B2" />
+      <circle cx="41" cy="42" r="3.5" fill="#1F2430" />
+      <circle cx="59" cy="42" r="3.5" fill="#1F2430" />
+      <path d="M47 51l3 3 3-3z" fill="#E86BA8" />
+      <path d="M30 50h12M30 55l12-2M70 50H58M70 55l-12-2" stroke="#4B5563" strokeWidth="1.8" strokeLinecap="round" />
+    </>
+  ),
+  it: (
+    <>
+      <ellipse cx="50" cy="76" rx="26" ry="16" fill="#C98A4E" />
+      <circle cx="50" cy="44" r="24" fill="#C98A4E" />
+      <ellipse cx="27" cy="44" rx="8" ry="16" fill="#8A5A34" />
+      <ellipse cx="73" cy="44" rx="8" ry="16" fill="#8A5A34" />
+      <ellipse cx="50" cy="54" rx="11" ry="8" fill="#F2D3A6" />
+      <circle cx="41" cy="40" r="3.5" fill="#1F2430" />
+      <circle cx="59" cy="40" r="3.5" fill="#1F2430" />
+      <ellipse cx="50" cy="50" rx="4" ry="3" fill="#1F2430" />
+    </>
+  ),
+  sigir: (
+    <>
+      <path d="M26 26q-8-8-14-2M74 26q8-8 14-2" stroke="#E8E2D8" strokeWidth="6" fill="none" strokeLinecap="round" />
+      <ellipse cx="50" cy="46" rx="26" ry="26" fill="#fff" stroke="#4B5563" strokeWidth="3" />
+      <path d="M32 30q8 2 8 12-10 2-14-6zM64 52q8-2 10 6-8 6-12 0z" fill="#1F2430" />
+      <ellipse cx="50" cy="66" rx="18" ry="12" fill="#F2A39A" />
+      <circle cx="44" cy="66" r="2.5" fill="#7A3B2E" />
+      <circle cx="56" cy="66" r="2.5" fill="#7A3B2E" />
+      <circle cx="40" cy="44" r="3.5" fill="#1F2430" />
+      <circle cx="60" cy="44" r="3.5" fill="#1F2430" />
+    </>
+  ),
+  quyon: (
+    <>
+      <ellipse cx="38" cy="22" rx="7" ry="20" fill="#E8E2D8" stroke="#9AA4B2" strokeWidth="2" />
+      <ellipse cx="62" cy="22" rx="7" ry="20" fill="#E8E2D8" stroke="#9AA4B2" strokeWidth="2" />
+      <ellipse cx="38" cy="24" rx="3" ry="13" fill="#F2A39A" />
+      <ellipse cx="62" cy="24" rx="3" ry="13" fill="#F2A39A" />
+      <circle cx="50" cy="56" r="24" fill="#E8E2D8" stroke="#9AA4B2" strokeWidth="2" />
+      <circle cx="42" cy="52" r="3.5" fill="#1F2430" />
+      <circle cx="58" cy="52" r="3.5" fill="#1F2430" />
+      <path d="M47 61l3 3 3-3z" fill="#E86BA8" />
+      <path d="M50 64v6" stroke="#9AA4B2" strokeWidth="2" />
+    </>
+  ),
+  tulki: (
+    <>
+      <path d="M20 14l18 26-22 6zM80 14L62 40l22 6z" fill="#F08A24" stroke="#C25E0B" strokeWidth="3" strokeLinejoin="round" />
+      <path d="M24 22l9 16-11 3zM76 22l-9 16 11 3z" fill="#1F2430" />
+      <path d="M16 44q34-22 68 0-6 26-34 40Q22 70 16 44z" fill="#F08A24" />
+      <path d="M22 54q14 4 28 26 14-22 28-26-4 18-28 30-24-12-28-30z" fill="#fff" />
+      <circle cx="38" cy="50" r="4" fill="#1F2430" />
+      <circle cx="62" cy="50" r="4" fill="#1F2430" />
+      <ellipse cx="50" cy="80" rx="5" ry="4" fill="#1F2430" />
+    </>
+  ),
+  svetofor: (
+    <>
+      <rect x="30" y="6" width="40" height="80" rx="10" fill="#1F2430" />
+      <rect x="45" y="86" width="10" height="12" fill="#4B5563" />
+      <circle cx="50" cy="22" r="10" fill="#E5484D" />
+      <circle cx="50" cy="46" r="10" fill="#F5B82E" />
+      <circle cx="50" cy="70" r="10" fill="#46A758" />
+    </>
+  ),
+  sayyora: (
+    <>
+      <circle cx="50" cy="50" r="26" fill="#F08A24" />
+      <path d="M30 42q20-8 40 0M28 56q22 8 44 0" stroke="#C25E0B" strokeWidth="3" fill="none" />
+      <ellipse cx="50" cy="52" rx="46" ry="12" fill="none" stroke="#F5B82E" strokeWidth="5" transform="rotate(-15 50 50)" />
+    </>
+  ),
+  sovun: (
+    <>
+      <rect x="18" y="46" width="64" height="34" rx="14" fill="#E86BA8" />
+      <rect x="28" y="54" width="44" height="6" rx="3" fill="#fff" opacity=".5" />
+      <circle cx="32" cy="30" r="9" fill="none" stroke="#5AA6D6" strokeWidth="3" />
+      <circle cx="56" cy="22" r="6" fill="none" stroke="#5AA6D6" strokeWidth="3" />
+      <circle cx="72" cy="34" r="5" fill="none" stroke="#5AA6D6" strokeWidth="3" />
+    </>
+  ),
+  shisha: (
+    <>
+      <rect x="42" y="6" width="16" height="10" rx="2" fill="#2D7A3A" />
+      <path d="M44 16h12v14q14 8 14 24v34q0 6-6 6H36q-6 0-6-6V54q0-16 14-24z" fill="#8FD0A0" stroke="#2D7A3A" strokeWidth="3" />
+      <rect x="36" y="56" width="28" height="18" fill="#fff" opacity=".7" />
+    </>
+  ),
+  qogoz: (
+    <>
+      <path d="M22 8h40l18 18v66H22z" fill="#fff" stroke="#4B5563" strokeWidth="3" strokeLinejoin="round" />
+      <path d="M62 8v18h18" fill="#E8E2D8" stroke="#4B5563" strokeWidth="3" strokeLinejoin="round" />
+      <path d="M32 42h38M32 54h38M32 66h38M32 78h24" stroke="#9AA4B2" strokeWidth="3" strokeLinecap="round" />
+    </>
+  ),
+  tanga: (
+    <>
+      <circle cx="50" cy="50" r="38" fill="#F5C02E" stroke="#B07D0A" strokeWidth="5" />
+      <circle cx="50" cy="50" r="26" fill="none" stroke="#B07D0A" strokeWidth="3" />
+      <path d="M50 34v32M42 42h16M42 58h16" stroke="#B07D0A" strokeWidth="4" strokeLinecap="round" />
+    </>
+  ),
+  oy: <path d="M64 10a40 40 0 1 0 0 80 32 32 0 1 1 0-80z" fill="#F5C02E" stroke="#B07D0A" strokeWidth="3" />,
 };
 
 export function Picture({ name, className, title }: { name: PictureName; className?: string; title?: string }) {

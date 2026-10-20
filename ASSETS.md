@@ -13,7 +13,7 @@ Loyihadagi barcha tasvir va ovozlar **asl (original)** — shu loyiha uchun kod 
 
 | Rasmlar | Fayl | Manba | Litsenziya |
 | --- | --- | --- | --- |
-| olma, nok, anor, uzum, yulduz, koptok, baliq, gul, qush, mashina, qalam, barg, quyosh, bulut, tomchi, kitob, daraxt, qor, suv, muz, choynak | `src/components/Picture.tsx` (ichki SVG) | Asl, oddiy geometrik shakllardan chizilgan | Loyiha bilan birga |
+| olma, nok, anor, uzum, yulduz, koptok, baliq, gul, qush, mashina, qalam, barg, quyosh, bulut, tomchi, kitob, daraxt, qor, suv, muz, choynak, doira, kvadrat, uchburchak, to‘rtburchak, mushuk, it, sigir, quyon, tulki, svetofor, sayyora, sovun, shisha, qog‘oz, tanga, oy | `src/components/Picture.tsx` (ichki SVG) | Asl, oddiy geometrik shakllardan chizilgan | Loyiha bilan birga |
 | Fan piktogrammalari | `src/components/SubjectIcon.tsx` | Asl | Loyiha bilan birga |
 | Interfeys piktogrammalari (uy, strelka, yulduzcha, lampochka va h.k.) | `src/components/Icon.tsx` | Asl, oddiy chiziqlar | Loyiha bilan birga |
 | Soat, o‘nlik ramka, o‘nlik bloklar, bayram yulduzchalari | `src/components/ClockFace.tsx`, `TenFrameGrid.tsx`, `Visual.tsx`, `Celebration.tsx` | Asl | Loyiha bilan birga |
@@ -22,8 +22,15 @@ Loyihadagi barcha tasvir va ovozlar **asl (original)** — shu loyiha uchun kod 
 
 | Ovoz | Fayl | Manba | Litsenziya |
 | --- | --- | --- | --- |
-| “pop”, “to‘g‘ri”, yumshoq “yana urinib ko‘ring”, qo‘ng‘iroqcha, “tik” | `src/lib/audio.ts` | Asl — brauzerda Web Audio API orqali sintez qilinadi, audio fayl yo‘q | Loyiha bilan birga |
+| “pop”, “to‘g‘ri”, yumshoq “yana urinib ko‘ring”, qo‘ng‘iroqcha, “tik”; animatsiya ovozlari: “tin” (qadam), “shuv” (sahna almashishi), ko‘tarish, sakrash, uchqunlar | `src/lib/audio.ts` | Asl — brauzerda Web Audio API orqali sintez qilinadi, audio fayl yo‘q | Loyiha bilan birga |
 | Oldindan yozilgan nutq | `public/audio/` | **Hozircha yo‘q.** Qo‘shilsa — shu jadvalga yozing | — |
+
+## Matnlar
+
+| Matn | Manba |
+| --- | --- |
+| Ertak, hikoya, topishmoq va suhbatlar (Bo‘tajon va quyoncha, Dangasa tulki va mehnatkash quyon, Nodira va kitob, Qushlar uyasi va boshqalar) | Asl, shu loyiha uchun yozilgan |
+| Maqollar (“Tomchi-tomchi ko‘l bo‘lur” va boshqalar) | O‘zbek xalq og‘zaki ijodi (jamoat mulki) |
 
 ## Shrift
 

@@ -20,8 +20,10 @@ async function allLessons(): Promise<[string, Lesson][]> {
 }
 
 describe('seed tarkib', () => {
-  it('kamida 12 mavzu, har birida 6–10 sahna va kamida 3 xil tur', async () => {
-    expect(CATALOG.length).toBeGreaterThanOrEqual(12);
+  it('har sinfda kamida 13 mavzu, har birida 6–10 sahna va kamida 3 xil tur', async () => {
+    expect(CATALOG.length).toBeGreaterThanOrEqual(54);
+    for (const g of [1, 2, 3, 4]) expect(CATALOG.filter((t) => t.grade === g).length, `${g}-sinf`).toBeGreaterThanOrEqual(12);
+    for (const s of ['matematika', 'ona-tili', 'oqish', 'olam']) expect(CATALOG.some((t) => t.subject === s), s).toBe(true);
     for (const [id, lesson] of await allLessons()) {
       expect(validateLesson(lesson, id).errors, id).toEqual([]);
       expect(lesson.scenes.length, id).toBeGreaterThanOrEqual(6);

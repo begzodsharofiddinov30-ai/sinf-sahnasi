@@ -24,7 +24,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     writeJSON('settings', settings);
-    configureAudio({ enabled: settings.soundOn, volume: settings.volume, calm: settings.calmMode });
+    configureAudio({ enabled: settings.soundOn, volume: settings.volume, calm: settings.calmMode, animSounds: settings.animSounds });
     const root = document.documentElement;
     root.style.setProperty('--font-scale', String(settings.fontScale));
     root.dataset.theme = settings.highContrast ? 'contrast' : 'default';

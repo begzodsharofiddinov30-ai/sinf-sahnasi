@@ -31,7 +31,7 @@ export function NumberLineScene({ scene, revealed }: SceneProps<LineData>) {
     if (to === pos) return;
     setArcs((a) => [...a, { from: pos, to }]);
     setPos(to);
-    playSfx('pop', arcs.length + 2);
+    playSfx('boing');
     announce(String(to));
   };
 
