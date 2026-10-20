@@ -33,7 +33,7 @@ export default defineLesson({
           visual: { kind: 'tiles', items: ['10', '+', '5', '=', '15'], highlight: [4] },
         },
       ],
-      hint: 'Ikki qo‘l barmoqlari (10) va yana bir necha choʻp bilan ko‘rsating.',
+      hint: 'Ikki qo‘l barmoqlari (10) va yana bir necha cho‘p bilan ko‘rsating.',
     },
     { id: 'ramka-13', type: 'ten-frame', prompt: '**13** ni ramkada ko‘rsating', frames: 2, target: 13 },
     {

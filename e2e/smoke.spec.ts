@@ -8,7 +8,8 @@ import { topicId } from '../src/content/schema';
 function watchErrors(page: Page): string[] {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(String(e)));
-  page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+  // Mahalliy preview'da /api yo'q — ilova buni kutadi va mahalliy rejimda ishlaydi
+  page.on('console', (m) => m.type() === 'error' && !m.location().url.includes('/api/') && errors.push(m.text()));
   return errors;
 }
 
@@ -27,27 +28,58 @@ async function playThrough(page: Page, title?: string) {
   await expect(page.locator('header p').first()).toContainText(`${total} / ${total}`);
 }
 
+// Barcha testlar bitta sinov hisobidan foydalanadi (admin ro'yxatida "(sinov)" deb ko'rinadi)
+const TEST = { firstName: 'Sinov', lastName: 'O‘qituvchi', local: '00 000 00 00', phone: '+998000000000' };
+const remote = Boolean(process.env.E2E_BASE_URL);
+
+async function registerVia(page: Page) {
+  await expect(page.getByRole('heading', { name: 'Xush kelibsiz!' })).toBeVisible();
+  await expect(page.locator('input[type="password"]')).toHaveCount(0);
+  await page.getByLabel('Ismingiz').fill(TEST.firstName);
+  await page.getByLabel('Familiyangiz').fill(TEST.lastName);
+  await page.getByLabel('Telefon raqamingiz').fill(TEST.local);
+  await page.getByRole('checkbox').check();
+  await page.getByRole('button', { name: 'Kirish' }).click();
+  await expect(page.getByText(/Assalomu alaykum, Sinov O‘qituvchi!/)).toBeVisible({ timeout: 15_000 });
+}
+
 test.describe('ro‘yxatdan o‘tish', () => {
-  test('ism-familiya bilan kiradi, parol so‘ralmaydi', async ({ page }) => {
+  test('ism, familiya va telefon bilan kiradi, parol so‘ralmaydi', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Xush kelibsiz!' })).toBeVisible();
-    await expect(page.locator('input[type="password"]')).toHaveCount(0);
-    await page.getByLabel('Ismingiz').fill('Dilnoza');
-    await page.getByLabel('Familiyangiz').fill('Karimova');
-    await page.getByRole('button', { name: 'Kirish' }).click();
-    await expect(page.getByText(/Assalomu alaykum, Dilnoza Karimova!/)).toBeVisible();
+    await registerVia(page);
     await page.reload();
-    await expect(page.getByText(/Assalomu alaykum, Dilnoza Karimova!/)).toBeVisible();
+    await expect(page.getByText(/Assalomu alaykum, Sinov O‘qituvchi!/)).toBeVisible({ timeout: 15_000 });
+  });
+
+  test('boshqa kompyuterda kirganda sinf ro‘yxati bulutdan qaytadi', async ({ browser }) => {
+    test.skip(!remote, 'Faqat jonli saytda (bulut serveri bilan)');
+    // Faqat harflardan iborat noyob ism — har safar boshqacha
+    const marker = 'Sinov' + Date.now().toString().split('').map((d) => 'abcdefghij'[Number(d)]).join('');
+    const a = await (await browser.newContext()).newPage();
+    await a.goto('/');
+    await registerVia(a);
+    await a.goto('/#/sozlamalar');
+    await a.getByRole('textbox', { name: 'Sinf ro‘yxati' }).fill(`${marker}\nAziz`);
+    const sent = a.waitForResponse((r) => r.url().includes('/api/sync') && r.request().method() === 'POST' && r.status() === 200, { timeout: 20_000 });
+    await a.getByRole('button', { name: 'Saqlash' }).click();
+    await sent;
+
+    // "Boshqa kompyuter": toza brauzer
+    const b = await (await browser.newContext()).newPage();
+    await b.goto('/');
+    await registerVia(b);
+    await b.goto('/#/sozlamalar');
+    await expect(b.getByRole('textbox', { name: 'Sinf ro‘yxati' })).toHaveValue(new RegExp(marker));
   });
 });
 
 // Qolgan testlarda o'qituvchi allaqachon ro'yxatdan o'tgan
 test.beforeEach(async ({ page }, info) => {
   if (info.titlePath.includes('ro‘yxatdan o‘tish')) return;
-  await page.addInitScript(() => {
+  await page.addInitScript((t) => {
     if (!localStorage.getItem('sinf-sahnasi:teacher'))
-      localStorage.setItem('sinf-sahnasi:teacher', JSON.stringify({ firstName: 'Sinov', lastName: 'O‘qituvchi', since: '2026-01-01' }));
-  });
+      localStorage.setItem('sinf-sahnasi:teacher', JSON.stringify({ firstName: t.firstName, lastName: t.lastName, phone: t.phone, since: '2026-01-01' }));
+  }, TEST);
 });
 
 test('bosh sahifadan darsgacha va oxirigacha', async ({ page }) => {

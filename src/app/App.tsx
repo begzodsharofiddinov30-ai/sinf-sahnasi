@@ -9,6 +9,7 @@ import { NotFoundPage } from '../pages/NotFound';
 import { SubjectPage } from '../pages/Subject';
 import { TopicPage } from '../pages/Topic';
 import { ToolsProvider } from '../tools/ToolsProvider';
+import { CloudSync } from './CloudSync';
 import { PwaProvider } from './PwaProvider';
 import { SettingsProvider } from './SettingsProvider';
 import { TeacherGate, TeacherProvider } from './TeacherProvider';
@@ -18,6 +19,7 @@ const WorksheetPage = lazy(() => import('../pages/Worksheet').then((m) => ({ def
 const ToolsPage = lazy(() => import('../pages/Tools').then((m) => ({ default: m.ToolsPage })));
 const SettingsPage = lazy(() => import('../pages/Settings').then((m) => ({ default: m.SettingsPage })));
 const SelfCheckPage = lazy(() => import('../pages/SelfCheck').then((m) => ({ default: m.SelfCheckPage })));
+const AdminPage = lazy(() => import('../pages/Admin').then((m) => ({ default: m.AdminPage })));
 const InstallPage = lazy(() => import('../pages/Install').then((m) => ({ default: m.InstallPage })));
 
 export const ROUTER_FUTURE = { v7_startTransition: true, v7_relativeSplatPath: true } as const;
@@ -41,26 +43,29 @@ export function AppRoutes() {
       <Route path="/sozlamalar/tekshiruv" element={lazyPage(<SelfCheckPage />)} />
       <Route path="/asboblar" element={lazyPage(<ToolsPage />)} />
       <Route path="/ornatish" element={lazyPage(<InstallPage />)} />
+      <Route path="/admin" element={lazyPage(<AdminPage />)} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }
 
 export function App() {
+  // Avval o'qituvchi kiradi (bulutdan ma'lumot keladi), keyin sozlamalar va asboblar shu ma'lumotni o'qiydi
   return (
     <PwaProvider>
-      <SettingsProvider>
-        <ToolsProvider>
-          <TeacherProvider>
-            <TeacherGate>
+      <TeacherProvider>
+        <TeacherGate>
+          <SettingsProvider>
+            <ToolsProvider>
               <HashRouter future={ROUTER_FUTURE}>
                 <AppRoutes />
               </HashRouter>
-            </TeacherGate>
-            <div id={LIVE_REGION_ID} className="sr-only" aria-live="polite" aria-atomic="true" />
-          </TeacherProvider>
-        </ToolsProvider>
-      </SettingsProvider>
+              <CloudSync />
+            </ToolsProvider>
+          </SettingsProvider>
+        </TeacherGate>
+        <div id={LIVE_REGION_ID} className="sr-only" aria-live="polite" aria-atomic="true" />
+      </TeacherProvider>
     </PwaProvider>
   );
 }

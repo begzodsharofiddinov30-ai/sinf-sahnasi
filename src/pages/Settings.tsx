@@ -1,12 +1,13 @@
 // Sozlamalar: ovoz, ko'rinish, rejimlar, sinf ro'yxati
-import { useId, useState, type ReactNode } from 'react';
+import { useId, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { Layout } from '../app/Layout';
 import { useSettings } from '../app/SettingsProvider';
-import { nameError } from '../app/teacher';
+import { formatPhone, nameError } from '../app/teacher';
 import { useTeacher } from '../app/TeacherProvider';
 import { BigButton, BigLink } from '../components/BigButton';
 import { Icon } from '../components/Icon';
 import { playSfx } from '../lib/audio';
+import { cloudEnabled, getCloudStatus, loadMeta, pushNow, subscribeCloud, type CloudStatus } from '../lib/cloud';
 import { storageAvailable } from '../lib/storage';
 import { ClassList } from '../tools/ClassList';
 
@@ -28,6 +29,38 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
       <h2 className="text-lead font-black">{title}</h2>
       {children}
     </section>
+  );
+}
+
+const CLOUD_TEXT: Record<CloudStatus, string> = {
+  synced: 'Bulutda saqlangan',
+  pending: 'Yuborish kutilmoqda (internet bo‘lganda yuklanadi)',
+  syncing: 'Yuklanmoqda…',
+  error: 'Bulut bilan bog‘lanib bo‘lmadi',
+  local: 'Faqat shu kompyuterda',
+};
+
+function CloudLine() {
+  const { teacher } = useTeacher();
+  const st = useSyncExternalStore(subscribeCloud, getCloudStatus);
+  if (!teacher?.phone || !cloudEnabled()) return null;
+  const meta = loadMeta();
+  const at = meta.syncedAt ? new Date(meta.syncedAt) : null;
+  return (
+    <div className="flex flex-wrap items-center gap-[1rem]">
+      <p className="flex-1 text-meta font-bold" aria-live="polite">
+        {CLOUD_TEXT[st]}
+        {st === 'synced' && at ? ` · ${String(at.getHours()).padStart(2, '0')}:${String(at.getMinutes()).padStart(2, '0')}` : ''}
+      </p>
+      <BigButton
+        size="md"
+        variant="secondary"
+        disabled={st === 'syncing'}
+        onClick={() => void pushNow({ firstName: teacher.firstName, lastName: teacher.lastName, phone: teacher.phone! })}
+      >
+        Hozir sinxronlash
+      </BigButton>
+    </div>
   );
 }
 
@@ -55,7 +88,7 @@ function TeacherSection() {
                 size="md"
                 disabled={!!err}
                 onClick={() => {
-                  register(first, last);
+                  void register(first, last);
                   setEdit(false);
                 }}
               >
@@ -70,16 +103,25 @@ function TeacherSection() {
           <div className="flex flex-wrap items-center gap-[1rem]">
             <p className="flex-1 text-lead font-black">
               {teacher.firstName} {teacher.lastName}
+              {teacher.phone && <span className="block text-body font-bold text-ink-soft">{formatPhone(teacher.phone)}</span>}
             </p>
-            <BigButton size="md" variant="secondary" onClick={() => setEdit(true)}>
-              Ismni o‘zgartirish
-            </BigButton>
+            {/* Bulutdagi hisobda ism — tanish kaliti, shuning uchun bu yerda o'zgartirilmaydi */}
+            {!teacher.phone && (
+              <BigButton size="md" variant="secondary" onClick={() => setEdit(true)}>
+                Ismni o‘zgartirish
+              </BigButton>
+            )}
           </div>
         )}
+        <CloudLine />
         {confirmOut ? (
           <div className="flex flex-wrap items-center gap-[1rem]">
-            <span className="text-meta font-bold">Chiqilsinmi? Ismingiz o‘chadi (sinf ro‘yxati va sozlamalar qoladi).</span>
-            <BigButton size="md" variant="accent" onClick={signOut}>
+            <span className="text-meta font-bold">
+              {teacher.phone
+                ? 'Chiqilsinmi? Ma’lumotlaringiz bulutda qoladi va shu kompyuterdan o‘chiriladi.'
+                : 'Chiqilsinmi? Ismingiz o‘chadi (sinf ro‘yxati va sozlamalar qoladi).'}
+            </span>
+            <BigButton size="md" variant="accent" onClick={() => void signOut()}>
               Ha, chiqish
             </BigButton>
             <BigButton size="md" variant="ghost" onClick={() => setConfirmOut(false)}>
@@ -93,7 +135,11 @@ function TeacherSection() {
             </BigButton>
           </div>
         )}
-        <p className="text-meta text-ink-soft">Ism faqat shu kompyuterda saqlanadi. Parol yo‘q, hech qayerga yuborilmaydi.</p>
+        <p className="text-meta text-ink-soft">
+          {teacher.phone && cloudEnabled()
+            ? 'Ism, raqam va sinf sozlamalari bulutda saqlanadi — boshqa kompyuterda xuddi shu ism va raqam bilan kiring. Parol yo‘q.'
+            : 'Ism faqat shu kompyuterda saqlanadi. Parol yo‘q, hech qayerga yuborilmaydi.'}
+        </p>
       </div>
     </Section>
   );

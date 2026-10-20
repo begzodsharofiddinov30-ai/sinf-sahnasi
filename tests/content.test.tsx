@@ -56,7 +56,7 @@ describe('seed tarkib', () => {
     }
   });
 
-  it('sahnasiz dars endi xato hisoblanadi; audio yoʻllari yigʻiladi', () => {
+  it('sahnasiz dars endi xato hisoblanadi; audio yo‘llari yig‘iladi', () => {
     const notes = { goal: 'g', questions: ['a', 'b', 'c'], minutes: 5 };
     expect(validateLesson({ notes, scenes: [] }).errors.join()).toMatch(/kamida bitta sahna/);
     expect(
@@ -65,7 +65,7 @@ describe('seed tarkib', () => {
   });
 });
 
-describe('ish varagʻi', () => {
+describe('ish varag‘i', () => {
   it('har bir dars uchun topshiriqlar tuziladi', async () => {
     for (const [id, lesson] of await allLessons()) {
       const ws = buildWorksheet(lesson);

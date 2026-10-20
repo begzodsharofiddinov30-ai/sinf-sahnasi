@@ -9,7 +9,7 @@ const guide = readFileSync(resolve(process.cwd(), 'CONTENT_GUIDE.md'), 'utf-8');
 const blocks = [...guide.matchAll(/```ts\n(\{\n {2}id:[\s\S]*?\n\})\n```/g)].map((m) => m[1]);
 
 describe('CONTENT_GUIDE.md shablonlari', () => {
-  it('har bir sahna turi uchun shablon bor va hammasi toʻgʻri', () => {
+  it('har bir sahna turi uchun shablon bor va hammasi to‘g‘ri', () => {
     const scenes = blocks.map((code) => new Function(`return (${code});`)() as { type: string });
     expect(new Set(scenes.map((s) => s.type))).toEqual(new Set(SCENE_TYPES));
     const r = validateLesson({ notes: { goal: 'g', questions: ['a', 'b', 'c'], minutes: 5 }, scenes });

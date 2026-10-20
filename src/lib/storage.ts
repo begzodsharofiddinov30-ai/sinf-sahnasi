@@ -1,6 +1,46 @@
 // Xavfsiz localStorage: xato bo'lsa jim turadi, ilova ishlashda davom etadi
 const PREFIX = 'sinf-sahnasi:';
 
+// O'zgarishlarni kuzatish (bulut sinxronlash uchun)
+type Listener = (key: string) => void;
+const listeners = new Set<Listener>();
+let muted = 0;
+
+export function onStorageWrite(cb: Listener): () => void {
+  listeners.add(cb);
+  return () => listeners.delete(cb);
+}
+
+/** Ichidagi yozuvlar kuzatuvchilarga xabar bermaydi (bulutdan kelgan ma'lumotni yozish uchun) */
+export function withoutNotify(fn: () => void): void {
+  muted++;
+  try {
+    fn();
+  } finally {
+    muted--;
+  }
+}
+
+function notify(key: string) {
+  if (muted > 0) return;
+  listeners.forEach((cb) => {
+    try {
+      cb(key);
+    } catch {
+      // e'tiborsiz
+    }
+  });
+}
+
+/** Saqlangan qiymatning xom matni (o'zgarishni solishtirish uchun) */
+export function readRaw(key: string): string | null {
+  try {
+    return getStore()?.getItem(PREFIX + key) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 function getStore(): Storage | null {
   try {
     return typeof window !== 'undefined' ? window.localStorage : null;
@@ -24,6 +64,7 @@ export function writeJSON(key: string, value: unknown): boolean {
     const store = getStore();
     if (!store) return false;
     store.setItem(PREFIX + key, JSON.stringify(value));
+    notify(key);
     return true;
   } catch {
     return false;
@@ -33,6 +74,7 @@ export function writeJSON(key: string, value: unknown): boolean {
 export function removeKey(key: string): void {
   try {
     getStore()?.removeItem(PREFIX + key);
+    notify(key);
   } catch {
     // e'tiborsiz
   }
