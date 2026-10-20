@@ -1,0 +1,146 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ranglar — RGB uchliklar (Tailwind shaffofligi uchun) */
+:root {
+  --font-scale: 1;
+  --bg: 255 248 236;
+  --surface: 255 255 255;
+  --surface-2: 243 235 221;
+  --ink: 31 42 55;
+  --ink-soft: 75 85 99;
+  --line: 214 200 178;
+  --primary: 37 99 168;
+  --primary-soft: 220 233 247;
+  --on-primary: 255 255 255;
+  --accent: 242 163 58;
+  --accent-soft: 253 235 207;
+  --success: 31 122 77;
+  --success-soft: 221 243 230;
+  --warn: 166 63 5;
+  --warn-soft: 253 236 220;
+  color-scheme: light;
+}
+
+/* Yuqori kontrast mavzusi (4-bosqichda sozlamadan yoqiladi) */
+:root[data-theme='contrast'] {
+  --bg: 255 255 255;
+  --surface: 255 255 255;
+  --surface-2: 235 235 235;
+  --ink: 0 0 0;
+  --ink-soft: 30 30 30;
+  --line: 0 0 0;
+  --primary: 0 64 160;
+  --primary-soft: 210 225 255;
+  --accent: 255 196 0;
+  --accent-soft: 255 240 180;
+  --success: 0 100 40;
+  --success-soft: 200 245 215;
+}
+
+/* 1rem ekran o'lchamiga moslashadi: 1080p da ~16px, 4K da ~32px */
+html {
+  font-size: calc(var(--font-scale) * clamp(12px, min(1.5vh, 1.2vw), 40px));
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  @apply bg-bg font-sans text-body text-ink antialiased;
+  margin: 0;
+  min-height: 100dvh;
+}
+
+/* Ko'rinadigan fokus — klaviatura va pult uchun */
+:focus-visible {
+  outline: 0.3rem solid rgb(var(--primary));
+  outline-offset: 0.25rem;
+  border-radius: 0.5rem;
+}
+
+mark.hl {
+  background: rgb(var(--accent-soft));
+  color: inherit;
+  padding: 0 0.04em;
+  border-radius: 0.2em;
+  text-decoration: underline;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.15em;
+}
+
+button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Maskot harakati (faqat transform, ~1 s) */
+@keyframes mascot-cheer {
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translateY(-8%); }
+  50% { transform: translateY(0); }
+  75% { transform: translateY(-4%); }
+}
+@keyframes mascot-think {
+  0%, 100% { transform: rotate(0); }
+  50% { transform: rotate(-3deg); }
+}
+.mascot-cheer {
+  transform-origin: 50% 90%;
+  animation: mascot-cheer 1.1s ease-out 1;
+}
+.mascot-think {
+  transform-origin: 50% 90%;
+  animation: mascot-think 1.2s ease-in-out 1;
+}
+:root[data-motion='reduced'] .mascot-cheer,
+:root[data-motion='reduced'] .mascot-think {
+  animation: none;
+}
+
+/* Yengil rejim: kuchsiz kompyuter uchun — o'tishlar, bezak soyalari va filtrlar o'chadi
+   (ring chegaralari ham box-shadow, shuning uchun faqat shadow-* klasslari) */
+:root[data-perf='light'] *,
+:root[data-perf='light'] *::before,
+:root[data-perf='light'] *::after {
+  transition: none !important;
+  animation: none !important;
+  filter: none !important;
+}
+:root[data-perf='light'] [class*='shadow-'] {
+  box-shadow: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  html {
+    font-size: 12pt !important;
+  }
+  header[data-app-header],
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff !important;
+    color: #000;
+  }
+  .ws-item {
+    break-inside: avoid;
+  }
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

@@ -1,0 +1,90 @@
+// QORALAMA: o'qituvchi tekshirib chiqishi kerak
+import { defineLesson } from '../../schema';
+
+export default defineLesson({
+  notes: {
+    goal: 'O‘quvchilar 10 ichida ayirishni “ketdi — qoldi” vaziyatlari orqali tushunadi.',
+    questions: [
+      'Daraxtda 5 ta qush bor edi, 2 tasi uchib ketdi. Nechta qoldi?',
+      'Ayirganda narsalar ko‘payadimi yoki kamayadimi?',
+      'Ayirish belgisi qanday yoziladi?',
+    ],
+    minutes: 15,
+  },
+  scenes: [
+    {
+      id: 'nima',
+      type: 'explain',
+      title: 'Ayirish nima?',
+      steps: [
+        { text: 'Daraxtda **5** ta qush bor edi.', visual: { kind: 'items', item: 'qush', count: 5 } },
+        { text: '**2** tasi uchib ketdi.', visual: { kind: 'tiles', items: ['5', '−', '2'] } },
+        { text: 'Qoldi: **3** ta qush.', visual: { kind: 'items', item: 'qush', count: 3 }, replace: true },
+        { text: 'Yozamiz: 5 − 2 = **3**.', visual: { kind: 'tiles', items: ['5', '−', '2', '=', '3'], highlight: [4] } },
+      ],
+      hint: '5 ta o‘quvchini chiqaring, 2 tasi o‘z joyiga qaytsin. Nechta qoldi?',
+    },
+    {
+      id: 'ramka',
+      type: 'ten-frame',
+      prompt: 'Ramkada 7 ta. **3** tasini olib tashlang!',
+      prefilled: 7,
+      target: 4,
+      hint: 'Bittadan olib, ovoz chiqarib sanang: 6, 5, 4.',
+    },
+    {
+      id: 'oq-8-3',
+      type: 'number-line',
+      prompt: '8 − 3 = ? Orqaga sakrang!',
+      min: 0,
+      max: 10,
+      start: 8,
+      step: -1,
+      answer: 5,
+      retryHint: '8 dan boshlab 3 marta orqaga sakrang.',
+    },
+    {
+      id: 'olti-ikki',
+      type: 'choose-answer',
+      question: '6 − 2 = ?',
+      visual: { kind: 'tiles', items: ['6', '−', '2', '=', '?'] },
+      options: [{ label: '3' }, { label: '4' }, { label: '5' }],
+      correct: 1,
+      retryHint: '6 ta barmoq ko‘rsating va 2 tasini buking.',
+      timerSec: 30,
+    },
+    {
+      id: 'olmalar',
+      type: 'count-and-tap',
+      prompt: 'Savatda 9 ta olma edi, 4 tasini yedik. Qolganini sanang!',
+      item: 'olma',
+      count: 5,
+      layout: 'row',
+    },
+    {
+      id: 'oq-10-4',
+      type: 'number-line',
+      prompt: '10 − 4 = ?',
+      min: 0,
+      max: 10,
+      start: 10,
+      step: -1,
+      answer: 6,
+      retryHint: '10 dan 4 marta orqaga sakrang.',
+    },
+    {
+      id: 'qaysi',
+      type: 'choose-answer',
+      question: 'Qaysi misolning javobi **2**?',
+      options: [{ label: '5 − 2' }, { label: '7 − 5' }, { label: '9 − 6' }],
+      correct: 1,
+      retryHint: 'Har bir misolni son o‘qida tekshiring.',
+    },
+    {
+      id: 'yakun',
+      type: 'recap',
+      title: 'Bugun o‘rgandik',
+      points: ['Ayirganda narsalar **kamayadi**.', 'Son o‘qida ayirish — **orqaga** sakrash.', '5 − 2 = 3'],
+    },
+  ],
+});
