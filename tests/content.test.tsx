@@ -94,3 +94,15 @@ describe('ish varagʻi', () => {
     expect(screen.getByText(/Javob: baliq/)).toBeInTheDocument();
   });
 });
+
+describe('useLesson', () => {
+  it('dars almashganda eski dars bir lahza ham qaytmaydi', async () => {
+    const { renderHook, waitFor } = await import('@testing-library/react');
+    const { useLesson } = await import('../src/content/useLesson');
+    const { result, rerender } = renderHook(({ id }) => useLesson(id), { initialProps: { id: '1/matematika/sonlar-1-10' } });
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+    rerender({ id: '1/matematika/kop-kam' });
+    expect(result.current.status).toBe('loading');
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+  });
+});

@@ -4,8 +4,6 @@ import { expect, test, type Page } from '@playwright/test';
 import { CATALOG } from '../src/content/catalog';
 import { topicId } from '../src/content/schema';
 
-// Katalogdagi barcha darslar
-const LESSONS = CATALOG.map(topicId);
 
 function watchErrors(page: Page): string[] {
   const errors: string[] = [];
@@ -14,9 +12,10 @@ function watchErrors(page: Page): string[] {
   return errors;
 }
 
-/** Darsni klaviatura bilan oxirigacha o'tadi */
-async function playThrough(page: Page) {
+/** Darsni klaviatura bilan oxirigacha o'tadi (title — kutilayotgan dars nomi) */
+async function playThrough(page: Page, title?: string) {
   await expect(page.getByTestId('player')).toBeVisible();
+  if (title) await expect(page.getByTestId('player').locator('header h1')).toHaveText(title);
   const total = await page.locator('nav[aria-label="Sahnalar"] button').count();
   expect(total).toBeGreaterThanOrEqual(6);
   for (let i = 0; i < 80; i++) {
@@ -66,9 +65,9 @@ test('bosh sahifadan darsgacha va oxirigacha', async ({ page }) => {
 
 test('barcha darslar boshidan oxirigacha oʻtadi', async ({ page }) => {
   const errors = watchErrors(page);
-  for (const id of LESSONS) {
-    await page.goto(`/#/dars/${id}`);
-    await playThrough(page);
+  for (const t of CATALOG) {
+    await page.goto(`/#/dars/${topicId(t)}`);
+    await playThrough(page, t.title);
   }
   expect(errors).toEqual([]);
 });
