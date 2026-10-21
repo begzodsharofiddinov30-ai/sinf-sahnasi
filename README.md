@@ -14,9 +14,14 @@ Boshlang‘ich sinf (1–4) o‘qituvchisi uchun **doska yoki proyektorda** ko�
 - **Ish varag‘i:** har bir mavzudan avtomatik tuziladi va A4 ga chop etiladi (javoblari bilan nusxasi ham bor).
 - **Sozlamalar:** ovoz, sokin rejim, yengil rejim (kuchsiz kompyuter uchun), yuqori kontrast, matn o‘lchami, sinf ro‘yxati.
 - **Tekshiruv sahifasi:** darsdan oldin oflayn tayyorlik, ovoz, to‘liq ekran va ekran o‘lchamini tekshiradi.
-- **O‘qituvchi ro‘yxatdan o‘tishi:** birinchi ochilishda o‘qituvchi faqat **ism va familiyasini** yozadi — parol ham, hisob ham, email ham yo‘q. Ism salomlashuvda va ish varag‘ida ko‘rinadi; Sozlamalarda o‘zgartiriladi yoki “Chiqish” bilan o‘chiriladi.
+- **Onlayn kirish:** birinchi ochilishda o‘qituvchi **ism, familiya va telefon raqamini** yozadi — parol, SMS va email yo‘q. Boshqa kompyuterda xuddi shu ma’lumot bilan kirsa, **sinf ro‘yxati, sevimlilar, sozlamalar, oxirgi dars va hisob** bulutdan qaytadi. Internet bo‘lmasa ham ishlaydi — o‘zgarishlar keyin yuklanadi.
+- **Administrator sahifasi:** `#/admin` — ro‘yxatdan o‘tgan o‘qituvchilar jadvali va CSV (Excel). Faqat `ADMIN_TOKEN` kaliti bilan ochiladi.
 - **Animatsiya ovozlari:** sahna almashishi, yangi qadam, narsani ko‘tarish, sakrash va bayram uchun yumshoq ovozlar (Sozlamalarda alohida o‘chiriladi; sokin rejimda jim).
-- **Maxfiylik:** server yo‘q, internetga hech qanday ma’lumot yuborilmaydi. O‘qituvchi ismi, sinf ro‘yxati (faqat ismlar) va sozlamalar faqat shu kompyuter brauzerida saqlanadi. Boshqa kompyuterda ism qaytadan kiritiladi.
+- **Maxfiylik:** o‘qituvchining ismi, familiyasi, telefoni va sinf sozlamalari (o‘quvchilar **ismlari** ro‘yxati bilan) o‘qituvchi roziligi bilan **bulutda** (Neon Postgres, Frankfurt) saqlanadi. Boshqa hech qanday ma’lumot, analitika yoki reklama yo‘q. “Chiqish” shu kompyuterdagi nusxani o‘chiradi; bulutdan butunlay o‘chirish — administrator orqali.
+
+> **Huquqiy eslatma:** O‘zbekistonning “Shaxsga doir ma’lumotlar to‘g‘risida”gi qonuni fuqarolarning shaxsiy ma’lumotlarini O‘zbekiston hududidagi serverlarda saqlashni talab qiladi. Hozirgi bulut (Neon, Frankfurt) xorijda. Maktab yoki tuman miqyosida ishlatishdan oldin huquqshunos bilan maslahatlashing; kerak bo‘lsa, server qismi (`server/`) mahalliy Postgres’ga ko‘chiriladi — buning uchun faqat `server/pg.ts` dagi ulanish manzili o‘zgaradi.
+
+> **Xavfsizlik:** parol yo‘qligi sababli, kimdir o‘qituvchining **ismi, familiyasi va telefonini** bilsa, uning sinf sozlamalarini ko‘ra oladi. Shuning uchun bulutda faqat dars uchun zarur ma’lumotlar saqlanadi (o‘quvchilarning familiyasi, baholari va boshqa shaxsiy ma’lumotlari saqlanmaydi).
 
 ## Pleyer tugmalari
 
@@ -50,6 +55,7 @@ Harfli tugmalar klaviatura rus yoki o‘zbek tartibida bo‘lsa ham ishlaydi.
 
 ### Portativ versiyaning cheklovlari
 
+- **Bulut ishlamaydi:** portativ versiyada telefon so‘ralmaydi, hamma narsa faqat shu kompyuterda saqlanadi.
 - `file://` orqali ochilgani uchun **service worker ishlamaydi** — lekin kerak ham emas: hamma narsa (darslar, shriftlar, rasmlar) faylning ichida.
 - Sozlamalar va sinf ro‘yxati brauzerda **fayl joylashgan joyga bog‘lab** saqlanadi. Faylni boshqa papkaga ko‘chirsangiz yoki boshqa kompyuterda ochsangiz, ular qaytadan kiritiladi.
 - Yangilash avtomatik emas: yangi `index.html` ni qaytadan nusxalash kerak.
@@ -101,6 +107,7 @@ O‘qituvchiga bu bo‘lim kerak emas — u tayyor sayt yoki portativ fayldan fo
 | `npm run lint` | Kod tekshiruvi |
 | `npm run validate:content` | Dars fayllarini tekshirish |
 | `npm run check` | Hammasi birga |
+| `npm run db:migrate` | Bazada jadvallarni yaratish (bir marta; `.env.local` dagi `DATABASE_URL` bilan) |
 
 Barcha buyruqlar Windows, macOS va Linux’da bir xil ishlaydi.
 
@@ -111,7 +118,9 @@ Komponentlarga tegmasdan, faqat ma’lumot fayli yozib qo‘shiladi. Batafsil: [
 ## Loyiha tuzilmasi
 
 ```
-src/app         marshrutlar, ramka, sozlamalar, PWA holati
+api             Vercel server funksiyalari: /api/login, /api/sync, /api/admin
+server          bulut mantig‘i (core.ts) va Postgres bazasi (pg.ts)
+src/app         marshrutlar, ramka, sozlamalar, o‘qituvchi profili, bulut sinxronlash, PWA
 src/pages       sahifalar (bosh, sinf, fan, mavzu, pleyer, ish varag‘i, asboblar, sozlamalar, tekshiruv, o‘rnatish)
 src/player      pleyer, sahna dvigateli, klaviatura, sahna turlari (scenes/)
 src/tools       tasodifiy o‘quvchi, hisob, taymer, sinf ro‘yxati

@@ -2,7 +2,7 @@
 
 Bu qo‘llanma loyihani internetga chiqarish uchun. Bir marta sozlansa, keyingi o‘zgarishlar avtomatik joylanadi.
 
-> Vercel’ning bepul tarifi (Hobby) shartlari vaqt o‘tishi bilan o‘zgarishi mumkin. Joylashdan oldin <https://vercel.com/pricing> sahifasida hozirgi shartlarni tekshiring (masalan, tijorat maqsadida foydalanish cheklovlari).
+> Vercel va Neon bepul tariflari (Hobby / Free) shartlari vaqt o‘tishi bilan o‘zgarishi mumkin. Joylashdan oldin <https://vercel.com/pricing> sahifasida hozirgi shartlarni tekshiring (masalan, tijorat maqsadida foydalanish cheklovlari).
 
 ## 1. GitHub’ga yuklash
 
@@ -30,6 +30,15 @@ Bu qo‘llanma loyihani internetga chiqarish uchun. Bir marta sozlansa, keyingi 
    - **Install Command:** standart (`npm install`)
    - Environment Variables: **kerak emas**
 4. **Deploy** ni bosing. 1–2 daqiqadan keyin `https://sinf-sahnasi-xxxx.vercel.app` kabi manzil beriladi.
+
+## 2a. Bulut bazasi va administrator kaliti
+
+1. Vercel → loyiha → **Storage** → **Create Database** → **Neon** (bepul) → mintaqa **Frankfurt (fra1)** → loyihaga ulang. `DATABASE_URL` kabi o‘zgaruvchilar o‘zi qo‘shiladi.
+   (CLI orqali: `vercel integration add neon -m region=fra1 -m auth=false`.)
+2. Jadvallarni yarating: `vercel env pull .env.local`, so‘ng `npm run db:migrate`.
+3. Administrator kaliti: **Settings → Environment Variables** → `ADMIN_TOKEN` = kamida 16 belgili tasodifiy matn (Production va Preview). Kalitni hech kimga bermang va git’ga yozmang.
+4. Admin sahifasi: `https://<sayt>/#/admin` → kalitni kiriting.
+5. `vercel.json` dagi `"regions": ["fra1"]` server funksiyalarini baza yonida ishlatadi.
 
 ## 3. Avtomatik yangilanish
 
