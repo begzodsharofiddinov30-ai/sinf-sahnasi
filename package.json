@@ -1,7 +1,7 @@
 {
   "name": "sinf-sahnasi",
   "private": true,
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Boshlang'ich sinf o'qituvchisi uchun oflayn dars sahnalari (1-4-sinf)",
   "type": "module",
   "scripts": {

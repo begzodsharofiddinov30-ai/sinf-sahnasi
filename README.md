@@ -2,13 +2,13 @@
 
 Boshlang‘ich sinf (1–4) o‘qituvchisi uchun **doska yoki proyektorda** ko‘rsatiladigan dars sahnalari. O‘qituvchi bitta tugma (yoki prezentatsiya pulti) bilan sahnalarni almashtiradi, bolalar doskaga chiqib mashqlarni bajaradi. Internet yo‘q bo‘lsa ham ishlaydi.
 
-> **Diqqat: dars mazmuni — qoralama.** 54 ta mavzuning hammasi namuna sifatida yozilgan. Har bir mavzuni darsda ishlatishdan oldin o‘qituvchi tekshirib chiqishi kerak. Mazmun rasmiy o‘quv dasturiga mos ekani **da’vo qilinmaydi**.
+> **Diqqat: dars mazmuni — qoralama.** 160 ta mavzuning hammasi namuna sifatida yozilgan. Har bir mavzuni darsda ishlatishdan oldin o‘qituvchi tekshirib chiqishi kerak. Mazmun rasmiy o‘quv dasturiga mos ekani **da’vo qilinmaydi**.
 
 **Jonli manzil:** <https://sinf-sahnasi.vercel.app> — uyda internet bor paytda bir marta oching va ilova sifatida o‘rnating.
 
 ## Nimalar bor
 
-- **54 ta mavzu** (har bir sinfda 12–17 ta: matematika, ona tili, o‘qish, atrofimizdagi olam), har birida 6–10 sahna.
+- **160 ta mavzu**: har bir sinfda (1–4) har bir fan bo‘yicha **10 tadan** — matematika, ona tili, o‘qish, atrofimizdagi olam. Har birida 6–10 sahna. 2-sinfda ko‘paytirish va bo‘lish, 4-sinfda tenglamalar bor.
 - **11 xil sahna:** tushuntirish, sanash, javob tanlash, moslashtirish (sudrab olib borish), so‘z yasash, guruhlarga ajratish, son o‘qi, o‘nlik ramka, soat, hikoya, yakun.
 - **O‘qituvchi asboblari:** tasodifiy o‘quvchi (takrorlamasdan), jamoalar hisobi, taymer.
 - **Ish varag‘i:** har bir mavzudan avtomatik tuziladi va A4 ga chop etiladi (javoblari bilan nusxasi ham bor).
