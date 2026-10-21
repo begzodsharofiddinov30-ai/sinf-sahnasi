@@ -187,6 +187,8 @@ test('bosh sahifadan darsgacha va oxirigacha', async ({ page }) => {
 });
 
 test('barcha darslar boshidan oxirigacha oʻtadi', async ({ page }) => {
+  // 160 ta dars — sekin CI serverida ham ulgursin
+  test.setTimeout(10 * 60_000);
   const errors = watchErrors(page);
   for (const t of CATALOG) {
     await page.goto(`/#/dars/${topicId(t)}`);
