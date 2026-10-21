@@ -18,6 +18,7 @@ export interface Store {
   create(row: Omit<TeacherRow, 'createdAt' | 'lastSeen'>): Promise<void>;
   saveData(phone: string, data: Record<string, unknown>, stamps: Record<string, number>, updatedAt: number): Promise<void>;
   remove(phone: string): Promise<boolean>;
+  rename(phone: string, firstName: string, lastName: string): Promise<void>;
   touch(phone: string): Promise<void>;
   list(): Promise<TeacherRow[]>;
   /** Cheklov: shu kalit bo'yicha daqiqada `limit` tadan ko'p so'rov bo'lsa — false */
@@ -194,6 +195,22 @@ export async function sync(store: Store, input: Record<string, unknown>, ip: str
   };
 }
 
+/** Ismni o'zgartirish: eski ism-familiya va raqam bilan tasdiqlanadi */
+export async function rename(store: Store, input: Record<string, unknown>, ip: string): Promise<Result> {
+  if (!(await store.hit(`rename:${ip}`, 10))) return fail(429, 'rate', 'Juda ko‘p urinish. Biroz kuting.');
+  const id = identity(input);
+  if ('status' in id) return id;
+  const firstName = cleanName(input.newFirstName);
+  const lastName = cleanName(input.newLastName);
+  if (!firstName || !lastName) return fail(400, 'bad-name', 'Yangi ism va familiya 2–30 ta harfdan iborat bo‘lsin.');
+  const row = await store.get(id.phone);
+  if (!row) return fail(404, 'not-found', 'Bu raqam ro‘yxatdan o‘tmagan.');
+  if (!sameName(row.firstName, id.firstName) || !sameName(row.lastName, id.lastName)) return fail(403, 'name-mismatch', 'Ism-familiya mos kelmadi.');
+  await store.rename(id.phone, firstName, lastName);
+  const stamps = effectiveStamps(row);
+  return { status: 200, body: { ok: true, teacher: { firstName, lastName, phone: id.phone }, data: row.data, stamps, updatedAt: maxStamp(stamps) } };
+}
+
 /** O'qituvchi o'z hisobini butunlay o'chiradi */
 export async function deleteSelf(store: Store, input: Record<string, unknown>, ip: string): Promise<Result> {
   if (!(await store.hit(`delete:${ip}`, 10))) return fail(429, 'rate', 'Juda ko‘p urinish. Biroz kuting.');
@@ -277,6 +294,10 @@ export function memoryStore(): Store & { rows: Map<string, TeacherRow> } {
     },
     async remove(p) {
       return rows.delete(p);
+    },
+    async rename(p, firstName, lastName) {
+      const r = rows.get(p);
+      if (r) rows.set(p, { ...r, firstName, lastName, lastSeen: now() });
     },
     async touch(p) {
       const r = rows.get(p);

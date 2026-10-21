@@ -102,6 +102,46 @@ test.describe('ro‘yxatdan o‘tish', () => {
     await expect(c.getByRole('link', { name: '2-sinf · Soat', exact: true })).toBeVisible();
   });
 
+  test('ism o‘zgartiriladi, boshqa kompyuter yangi ismni so‘raydi', async ({ browser }) => {
+    test.skip(!remote, 'Faqat jonli saytda (bulut serveri bilan)');
+    test.setTimeout(120_000);
+    const who = { firstName: 'Sinov', lastName: 'Eskiism', phone: '00 000 00 03' };
+    const login = async (p: Page, last: string) => {
+      await p.goto('/');
+      await p.getByLabel('Ismingiz').fill(who.firstName);
+      await p.getByLabel('Familiyangiz').fill(last);
+      await p.getByLabel('Telefon raqamingiz').fill(who.phone);
+      await p.getByRole('checkbox').check();
+      await p.getByRole('button', { name: 'Kirish' }).click();
+      await expect(p.getByText(new RegExp(`Assalomu alaykum, Sinov ${last}`))).toBeVisible({ timeout: 15_000 });
+    };
+    // Avvalgi yiqilgan sinovdan qolgan bo'lsa — tozalaymiz
+    const pre = await browser.newPage();
+    await pre.request.post('/api/rename', { data: { ...who, lastName: 'Yangiism', newFirstName: 'Sinov', newLastName: 'Eskiism' } });
+    await pre.close();
+
+    const a = await (await browser.newContext()).newPage();
+    await login(a, 'Eskiism');
+    const b = await (await browser.newContext()).newPage();
+    await login(b, 'Eskiism');
+
+    // A: ismni o'zgartiradi
+    await a.goto('/#/sozlamalar');
+    await a.getByRole('button', { name: 'Ismni o‘zgartirish' }).click();
+    await a.getByRole('textbox', { name: 'Familiya', exact: true }).fill('Yangiism');
+    await a.getByRole('button', { name: 'Saqlash' }).first().click();
+    await expect(a.getByText('Sinov Yangiism')).toBeVisible({ timeout: 15_000 });
+
+    // B: oynaga qaytganda yangi ism so'raladi
+    await b.waitForTimeout(16_000);
+    await b.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await expect(b.getByRole('heading', { name: 'Ism o‘zgargan' })).toBeVisible({ timeout: 20_000 });
+
+    // Tozalash: hisobni o'chiramiz
+    const del = await a.request.post('/api/delete', { data: { ...who, lastName: 'Yangiism' } });
+    expect(del.status()).toBe(200);
+  });
+
   test('o‘qituvchi hisobini butunlay o‘chiradi', async ({ page }) => {
     test.skip(!remote, 'Faqat jonli saytda (bulut serveri bilan)');
     const who = { firstName: 'Sinov', lastName: 'Ochirish', phone: '00 000 00 01' };

@@ -65,7 +65,9 @@ function CloudLine() {
 }
 
 function TeacherSection() {
-  const { teacher, register, signOut, deleteAccount } = useTeacher();
+  const { teacher, signOut, deleteAccount, rename } = useTeacher();
+  const [renameError, setRenameError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [edit, setEdit] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -86,16 +88,25 @@ function TeacherSection() {
               <input aria-label="Familiya" value={last} onChange={(e) => setLast(e.target.value)} className={input} />
             </div>
             {err && <p className="text-meta font-bold text-warn">{err}</p>}
+            {renameError && (
+              <p role="alert" className="text-meta font-bold text-warn">
+                {renameError}
+              </p>
+            )}
             <div className="flex gap-[1rem]">
               <BigButton
                 size="md"
-                disabled={!!err}
-                onClick={() => {
-                  void register(first, last);
-                  setEdit(false);
+                disabled={!!err || saving}
+                onClick={async () => {
+                  setSaving(true);
+                  setRenameError(null);
+                  const r = await rename(first, last);
+                  setSaving(false);
+                  if (r.ok) setEdit(false);
+                  else setRenameError(r.message);
                 }}
               >
-                Saqlash
+                {saving ? 'Saqlanmoqda…' : 'Saqlash'}
               </BigButton>
               <BigButton size="md" variant="ghost" onClick={() => setEdit(false)}>
                 Bekor qilish
@@ -108,12 +119,17 @@ function TeacherSection() {
               {teacher.firstName} {teacher.lastName}
               {teacher.phone && <span className="block text-body font-bold text-ink-soft">{formatPhone(teacher.phone)}</span>}
             </p>
-            {/* Bulutdagi hisobda ism — tanish kaliti, shuning uchun bu yerda o'zgartirilmaydi */}
-            {!teacher.phone && (
-              <BigButton size="md" variant="secondary" onClick={() => setEdit(true)}>
-                Ismni o‘zgartirish
-              </BigButton>
-            )}
+            <BigButton
+              size="md"
+              variant="secondary"
+              onClick={() => {
+                setFirst(teacher.firstName);
+                setLast(teacher.lastName);
+                setEdit(true);
+              }}
+            >
+              Ismni o‘zgartirish
+            </BigButton>
           </div>
         )}
         <CloudLine />

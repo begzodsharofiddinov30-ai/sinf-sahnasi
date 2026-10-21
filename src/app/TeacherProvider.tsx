@@ -2,7 +2,18 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Mascot } from '../components/Mascot';
 import { RegisterPage } from '../pages/Register';
-import { clearLocalData, cloudEnabled, cloudLogin, deleteAccount as cloudDelete, loadMeta, pullNow, pushNow, setCloudStatus } from '../lib/cloud';
+import {
+  clearLocalData,
+  cloudEnabled,
+  cloudLogin,
+  deleteAccount as cloudDelete,
+  loadMeta,
+  onIdentityMismatch,
+  pullNow,
+  pushNow,
+  renameAccount,
+  setCloudStatus,
+} from '../lib/cloud';
 import { clearTeacher, loadTeacher, normalizePhone, saveTeacher, type Teacher } from './teacher';
 
 export type RegisterResult = { ok: true; offline: boolean } | { ok: false; message: string };
@@ -13,6 +24,10 @@ interface TeacherCtx {
   signOut: () => Promise<void>;
   /** Bulutdan butunlay o'chirish va chiqish */
   deleteAccount: () => Promise<{ ok: true } | { ok: false; message: string }>;
+  /** Ism-familiyani o'zgartirish (bulutda ham) */
+  rename: (firstName: string, lastName: string) => Promise<{ ok: true } | { ok: false; message: string }>;
+  /** Ism boshqa kompyuterda o'zgartirilgan — qayta kirish kerak */
+  stale: boolean;
 }
 
 const Ctx = createContext<TeacherCtx>({
@@ -20,6 +35,8 @@ const Ctx = createContext<TeacherCtx>({
   register: async () => ({ ok: true, offline: true }),
   signOut: async () => {},
   deleteAccount: async () => ({ ok: true }),
+  rename: async () => ({ ok: true }),
+  stale: false,
 });
 
 const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T) =>
@@ -29,6 +46,10 @@ const identity = (t: Teacher) => (t.phone ? { firstName: t.firstName, lastName: 
 
 export function TeacherProvider({ children }: { children: ReactNode }) {
   const [teacher, setTeacher] = useState<Teacher | null>(loadTeacher);
+  const [stale, setStale] = useState(false);
+
+  // Bulut eski ismni tanimasa (ism boshqa kompyuterda o'zgartirilgan) — yangi ismni so'raymiz
+  useEffect(() => onIdentityMismatch(() => setStale(true)), []);
   // Ochilishda bulutdagi yangiroq ma'lumotni kutish (ko'pi bilan 4 soniya)
   const [ready, setReady] = useState(() => !(teacher?.phone && cloudEnabled() && navigator.onLine !== false));
 
@@ -50,6 +71,7 @@ export function TeacherProvider({ children }: { children: ReactNode }) {
       const t = res ? saveTeacher(res.teacher.firstName, res.teacher.lastName, p) : saveTeacher(f, l, p);
       if (!res) setCloudStatus(loadMeta().pending ? 'pending' : 'local');
       setTeacher(t);
+      setStale(false);
       setReady(true);
       return { ok: true, offline: !res };
     }
@@ -79,7 +101,24 @@ export function TeacherProvider({ children }: { children: ReactNode }) {
     return { ok: true as const };
   }, [teacher]);
 
-  const value = useMemo(() => ({ teacher, register, signOut, deleteAccount }), [teacher, register, signOut, deleteAccount]);
+  const rename = useCallback(
+    async (f: string, l: string) => {
+      if (!teacher) return { ok: false as const, message: 'Avval kiring.' };
+      const id = identity(teacher);
+      if (id && cloudEnabled()) {
+        const r = await renameAccount(id, f.trim(), l.trim());
+        if (!r.ok) return r;
+      }
+      setTeacher(saveTeacher(f, l, teacher.phone));
+      return { ok: true as const };
+    },
+    [teacher],
+  );
+
+  const value = useMemo(
+    () => ({ teacher, register, signOut, deleteAccount, rename, stale }),
+    [teacher, register, signOut, deleteAccount, rename, stale],
+  );
 
   return (
     <Ctx.Provider value={value}>
@@ -105,7 +144,7 @@ export function useTeacher(): TeacherCtx {
 
 /** Ro'yxatdan o'tmagan (yoki telefon raqami yo'q) bo'lsa — avval kirish oynasi. Admin sahifasi bundan mustasno. */
 export function TeacherGate({ children }: { children: ReactNode }) {
-  const { teacher } = useTeacher();
+  const { teacher, stale } = useTeacher();
   const [hash, setHash] = useState(() => (typeof location !== 'undefined' ? location.hash : ''));
   useEffect(() => {
     const on = () => setHash(location.hash);
@@ -114,5 +153,6 @@ export function TeacherGate({ children }: { children: ReactNode }) {
   }, []);
   if (hash.startsWith('#/admin')) return <>{children}</>;
   const needsPhone = teacher && !teacher.phone && cloudEnabled();
+  if (teacher && stale) return <RegisterPage existing={teacher} reason="renamed" />;
   return teacher && !needsPhone ? <>{children}</> : <RegisterPage existing={teacher ?? undefined} />;
 }

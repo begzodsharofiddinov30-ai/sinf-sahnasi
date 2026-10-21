@@ -12,7 +12,7 @@ function maskLocal(raw: string): string {
   return [d.slice(0, 2), d.slice(2, 5), d.slice(5, 7), d.slice(7, 9)].filter(Boolean).join(' ');
 }
 
-export function RegisterPage({ existing }: { existing?: Teacher }) {
+export function RegisterPage({ existing, reason }: { existing?: Teacher; reason?: 'renamed' }) {
   const { register } = useTeacher();
   const cloud = cloudEnabled();
   const [first, setFirst] = useState(existing?.firstName ?? '');
@@ -59,10 +59,14 @@ export function RegisterPage({ existing }: { existing?: Teacher }) {
           </span>
           <div>
             <h1 id={`${fid}-title`} className="text-title font-black">
-              {existing ? 'Ma’lumotni to‘ldiring' : 'Xush kelibsiz!'}
+              {reason === 'renamed' ? 'Ism o‘zgargan' : existing ? 'Ma’lumotni to‘ldiring' : 'Xush kelibsiz!'}
             </h1>
             <p className="text-body font-bold text-ink-soft">
-              {existing ? 'Endi boshqa kompyuterda ham kirish uchun telefon raqamingiz kerak.' : `Men ${MASCOT_NAME}man. Keling, tanishamiz.`}
+              {reason === 'renamed'
+                ? 'Ismingiz boshqa kompyuterda o‘zgartirilgan. Yangi ism-familiyani kiriting.'
+                : existing
+                  ? 'Endi boshqa kompyuterda ham kirish uchun telefon raqamingiz kerak.'
+                  : `Men ${MASCOT_NAME}man. Keling, tanishamiz.`}
             </p>
           </div>
         </div>

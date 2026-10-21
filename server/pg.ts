@@ -63,6 +63,9 @@ export function pgStore(url = process.env.DATABASE_URL ?? process.env.POSTGRES_U
       const rows = (await sql`DELETE FROM teachers WHERE phone = ${phone} RETURNING phone`) as { phone: string }[];
       return rows.length > 0;
     },
+    async rename(phone, firstName, lastName) {
+      await sql`UPDATE teachers SET first_name = ${firstName}, last_name = ${lastName}, last_seen = now() WHERE phone = ${phone}`;
+    },
     async touch(phone) {
       await sql`UPDATE teachers SET last_seen = now() WHERE phone = ${phone}`;
     },

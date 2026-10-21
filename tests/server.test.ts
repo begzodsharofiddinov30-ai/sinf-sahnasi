@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { adminDelete, adminList, cleanData, deleteSelf, login, memoryStore, mergeData, normalizePhone, safeEqual, sync, TEST_PHONE } from '../server/core';
+import { adminDelete, adminList, cleanData, deleteSelf, login, memoryStore, mergeData, normalizePhone, rename, safeEqual, sync, TEST_PHONE } from '../server/core';
 
 const who = { firstName: 'Dilnoza', lastName: 'Karimova', phone: '90 123 45 67' };
 
@@ -136,5 +136,18 @@ describe('o‘chirish', () => {
     expect((await adminDelete(store, T, T, 'ip', 'yomon')).status).toBe(400);
     expect((await adminDelete(store, T, T, 'ip', '90 123 45 67')).status).toBe(200);
     expect((await adminDelete(store, T, T, 'ip', '90 123 45 67')).status).toBe(404);
+  });
+});
+
+describe('ismni o‘zgartirish', () => {
+  it('eski ism bilan tasdiqlanadi; keyin faqat yangi ism ishlaydi', async () => {
+    const store = memoryStore();
+    await login(store, { ...who, data: { classList: ['A'] }, stamps: { classList: 5 } }, 'ip');
+    expect((await rename(store, { ...who, firstName: 'Boshqa', newFirstName: 'Dilnoza', newLastName: 'Aliyeva' }, 'ip')).status).toBe(403);
+    expect((await rename(store, { ...who, newFirstName: 'D1', newLastName: 'Aliyeva' }, 'ip')).status).toBe(400);
+    const r = await rename(store, { ...who, newFirstName: 'Dilnoza', newLastName: 'Aliyeva' }, 'ip');
+    expect(r.body).toMatchObject({ ok: true, teacher: { lastName: 'Aliyeva' }, data: { classList: ['A'] } });
+    expect((await sync(store, who, 'ip')).body).toMatchObject({ error: 'name-mismatch' });
+    expect((await sync(store, { ...who, lastName: 'Aliyeva' }, 'ip')).status).toBe(200);
   });
 });

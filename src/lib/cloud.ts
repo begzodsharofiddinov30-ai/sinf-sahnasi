@@ -62,6 +62,16 @@ function saveMeta(patch: Partial<CloudMeta>): CloudMeta {
   return next;
 }
 
+// --- Ism boshqa kompyuterda o'zgartirilgan bo'lsa ---
+const mismatchSubs = new Set<() => void>();
+export function onIdentityMismatch(f: () => void): () => void {
+  mismatchSubs.add(f);
+  return () => mismatchSubs.delete(f);
+}
+function identityMismatch() {
+  mismatchSubs.forEach((f) => f());
+}
+
 // --- Holat kuzatuvchilari (Sozlamalar sahifasi uchun) ---
 export type CloudStatus = 'local' | 'synced' | 'pending' | 'syncing' | 'error';
 let status: CloudStatus = 'local';
@@ -210,6 +220,7 @@ export function pushNow(id: CloudIdentity): Promise<boolean> {
   inflight ??= (async () => {
     setCloudStatus('syncing');
     const res = await post('/api/sync', { ...id, ...payload() });
+    if (res && !res.ok && res.error === 'name-mismatch') identityMismatch();
     if (!res || !res.ok) {
       setCloudStatus(res ? 'error' : loadMeta().pending ? 'pending' : 'local');
       return false;
@@ -229,6 +240,7 @@ export async function pullNow(id: CloudIdentity): Promise<boolean> {
   if (loadMeta().pending) return pushNow(id);
   setCloudStatus('syncing');
   const res = await post('/api/sync', id);
+  if (res && !res.ok && res.error === 'name-mismatch') identityMismatch();
   if (!res || !res.ok) {
     setCloudStatus(res ? 'error' : loadMeta().syncedAt ? 'pending' : 'local');
     return false;
@@ -243,5 +255,13 @@ export async function deleteAccount(id: CloudIdentity): Promise<{ ok: true } | {
   const res = await post('/api/delete', id);
   if (!res) return { ok: false, message: 'Internet yo‘q yoki server javob bermadi. Keyinroq urinib ko‘ring.' };
   if (!res.ok && res.error !== 'not-found') return { ok: false, message: res.message ?? 'O‘chirib bo‘lmadi.' };
+  return { ok: true };
+}
+
+/** Ism-familiyani bulutda o'zgartirish */
+export async function renameAccount(id: CloudIdentity, firstName: string, lastName: string): Promise<{ ok: true } | { ok: false; message: string }> {
+  const res = await post('/api/rename', { ...id, newFirstName: firstName, newLastName: lastName });
+  if (!res) return { ok: false, message: 'Internet yo‘q yoki server javob bermadi. Keyinroq urinib ko‘ring.' };
+  if (!res.ok) return { ok: false, message: res.message ?? 'O‘zgartirib bo‘lmadi.' };
   return { ok: true };
 }

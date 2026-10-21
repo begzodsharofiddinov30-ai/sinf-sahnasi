@@ -206,3 +206,22 @@ describe('ochiq sahifa bulutdan yangilanadi', () => {
     expect(loadTeacher()).toBeNull();
   });
 });
+
+describe('ism boshqa kompyuterda o‘zgarsa', () => {
+  it('bulut eski ismni tanimasa — yangi ism so‘raladi, raqam saqlanadi', async () => {
+    const { pullNow } = await import('../src/lib/cloud');
+    writeJSON('teacher', { ...teacherBody, since: '' });
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ ok: false, error: 'name-mismatch', message: 'Ism-familiya mos kelmadi.' }), {
+        status: 403,
+        headers: { 'content-type': 'application/json' },
+      }),
+    );
+    app();
+    await act(async () => {
+      await pullNow(teacherBody);
+    });
+    expect(await screen.findByRole('heading', { name: 'Ism o‘zgargan' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Telefon raqamingiz')).toHaveValue('90 123 45 67');
+  });
+});
