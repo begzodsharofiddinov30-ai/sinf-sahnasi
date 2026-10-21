@@ -32,6 +32,25 @@ function notify(key: string) {
   });
 }
 
+// Tashqi (bulutdan kelgan) o'zgarishlar: provayderlar holatini qayta o'qiydi
+type ExternalListener = (keys: string[]) => void;
+const external = new Set<ExternalListener>();
+
+export function onExternalChange(cb: ExternalListener): () => void {
+  external.add(cb);
+  return () => external.delete(cb);
+}
+
+export function emitExternal(keys: string[]): void {
+  external.forEach((cb) => {
+    try {
+      cb(keys);
+    } catch {
+      // e'tiborsiz
+    }
+  });
+}
+
 /** Saqlangan qiymatning xom matni (o'zgarishni solishtirish uchun) */
 export function readRaw(key: string): string | null {
   try {

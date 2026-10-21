@@ -51,25 +51,72 @@ test.describe('ro‘yxatdan o‘tish', () => {
     await expect(page.getByText(/Assalomu alaykum, Sinov O‘qituvchi!/)).toBeVisible({ timeout: 15_000 });
   });
 
-  test('boshqa kompyuterda kirganda sinf ro‘yxati bulutdan qaytadi', async ({ browser }) => {
+  test('ikki kompyuter: o‘zgarishlar birlashadi va ochiq sahifa yangilanadi', async ({ browser }) => {
     test.skip(!remote, 'Faqat jonli saytda (bulut serveri bilan)');
+    test.setTimeout(120_000);
     // Faqat harflardan iborat noyob ism — har safar boshqacha
     const marker = 'Sinov' + Date.now().toString().split('').map((d) => 'abcdefghij'[Number(d)]).join('');
+    const synced = (p: Page) =>
+      p.waitForResponse((r) => r.url().includes('/api/sync') && r.request().method() === 'POST' && r.status() === 200, { timeout: 20_000 });
+
+    // Ikkala kompyuter ham ochiq
     const a = await (await browser.newContext()).newPage();
     await a.goto('/');
     await registerVia(a);
-    await a.goto('/#/sozlamalar');
-    await a.getByRole('textbox', { name: 'Sinf ro‘yxati' }).fill(`${marker}\nAziz`);
-    const sent = a.waitForResponse((r) => r.url().includes('/api/sync') && r.request().method() === 'POST' && r.status() === 200, { timeout: 20_000 });
-    await a.getByRole('button', { name: 'Saqlash' }).click();
-    await sent;
-
-    // "Boshqa kompyuter": toza brauzer
     const b = await (await browser.newContext()).newPage();
     await b.goto('/');
     await registerVia(b);
+
+    // A: sinf ro'yxati o'zgaradi
+    await a.goto('/#/sozlamalar');
+    const sentA = synced(a);
+    await a.getByRole('textbox', { name: 'Sinf ro‘yxati' }).fill(`${marker}\nAziz`);
+    await a.getByRole('button', { name: 'Saqlash' }).click();
+    await sentA;
+
+    // B (hali eski ro'yxat bilan): sevimlilar o'zgaradi
+    await b.goto('/#/sinf/2/matematika/soat');
+    const star = b.getByRole('button', { name: /Sevimlilar/ });
+    const sentB = synced(b);
+    if ((await star.getAttribute('aria-pressed')) === 'true') {
+      await star.click();
+      await sentB;
+      await star.click();
+    } else await star.click();
+    await synced(b).catch(() => undefined);
+
+    // B ochiq turibdi: oynaga qaytganda A ning ro'yxati ko'rinadi (sahifa qayta yuklanmaydi)
     await b.goto('/#/sozlamalar');
-    await expect(b.getByRole('textbox', { name: 'Sinf ro‘yxati' })).toHaveValue(new RegExp(marker));
+    await b.waitForTimeout(16_000);
+    await b.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await expect(b.getByRole('textbox', { name: 'Sinf ro‘yxati' })).toHaveValue(new RegExp(marker), { timeout: 20_000 });
+
+    // Uchinchi, toza kompyuter: ikkala o'zgarish ham bor
+    const c = await (await browser.newContext()).newPage();
+    await c.goto('/');
+    await registerVia(c);
+    await c.goto('/#/sozlamalar');
+    await expect(c.getByRole('textbox', { name: 'Sinf ro‘yxati' })).toHaveValue(new RegExp(marker));
+    await c.goto('/');
+    await expect(c.getByRole('heading', { name: 'Sevimlilar' })).toBeVisible();
+    await expect(c.getByRole('link', { name: /Soat/ })).toBeVisible();
+  });
+
+  test('o‘qituvchi hisobini butunlay o‘chiradi', async ({ page }) => {
+    test.skip(!remote, 'Faqat jonli saytda (bulut serveri bilan)');
+    const who = { firstName: 'Sinov', lastName: 'Ochirish', phone: '00 000 00 01' };
+    await page.goto('/');
+    await page.getByLabel('Ismingiz').fill(who.firstName);
+    await page.getByLabel('Familiyangiz').fill(who.lastName);
+    await page.getByLabel('Telefon raqamingiz').fill(who.phone);
+    await page.getByRole('checkbox').check();
+    await page.getByRole('button', { name: 'Kirish' }).click();
+    await page.goto('/#/sozlamalar');
+    await page.getByRole('button', { name: 'Hisobimni butunlay o‘chirish' }).click();
+    await page.getByRole('button', { name: 'Ha, butunlay o‘chirish' }).click();
+    await expect(page.getByRole('heading', { name: 'Xush kelibsiz!' })).toBeVisible({ timeout: 15_000 });
+    const res = await page.request.post('/api/sync', { data: who });
+    expect(res.status()).toBe(404);
   });
 });
 

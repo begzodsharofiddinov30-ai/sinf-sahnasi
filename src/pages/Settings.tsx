@@ -65,8 +65,11 @@ function CloudLine() {
 }
 
 function TeacherSection() {
-  const { teacher, register, signOut } = useTeacher();
+  const { teacher, register, signOut, deleteAccount } = useTeacher();
   const [edit, setEdit] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [first, setFirst] = useState(teacher?.firstName ?? '');
   const [last, setLast] = useState(teacher?.lastName ?? '');
   const [confirmOut, setConfirmOut] = useState(false);
@@ -133,6 +136,44 @@ function TeacherSection() {
             <BigButton size="md" variant="ghost" onClick={() => setConfirmOut(true)}>
               Chiqish (boshqa o‘qituvchi uchun)
             </BigButton>
+          </div>
+        )}
+        {teacher.phone && cloudEnabled() && (
+          <div className="flex flex-col gap-[0.8rem] border-t-[0.15rem] border-line pt-[1rem]">
+            {confirmDelete ? (
+              <div className="flex flex-wrap items-center gap-[1rem]">
+                <span className="text-meta font-bold text-warn">
+                  Hisobingiz va bulutdagi barcha ma’lumotlaringiz (sinf ro‘yxati, sozlamalar, hisob) butunlay o‘chiriladi. Buni qaytarib bo‘lmaydi.
+                </span>
+                <BigButton
+                  size="md"
+                  variant="accent"
+                  disabled={deleting}
+                  onClick={async () => {
+                    setDeleting(true);
+                    const r = await deleteAccount();
+                    setDeleting(false);
+                    if (!r.ok) setDeleteError(r.message);
+                  }}
+                >
+                  {deleting ? 'O‘chirilmoqda…' : 'Ha, butunlay o‘chirish'}
+                </BigButton>
+                <BigButton size="md" variant="ghost" onClick={() => setConfirmDelete(false)}>
+                  Yo‘q
+                </BigButton>
+              </div>
+            ) : (
+              <div>
+                <BigButton size="md" variant="ghost" onClick={() => setConfirmDelete(true)}>
+                  Hisobimni butunlay o‘chirish
+                </BigButton>
+              </div>
+            )}
+            {deleteError && (
+              <p role="alert" className="text-meta font-bold text-warn">
+                {deleteError}
+              </p>
+            )}
           </div>
         )}
         <p className="text-meta text-ink-soft">

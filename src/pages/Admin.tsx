@@ -59,6 +59,8 @@ export function AdminPage() {
   const [busy, setBusy] = useState(false);
   const [q, setQ] = useState('');
   const [showTest, setShowTest] = useState(false);
+  const [confirmPhone, setConfirmPhone] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const tid = useId();
   const sid = useId();
 
@@ -84,6 +86,26 @@ export function AdminPage() {
   useEffect(() => {
     if (token) void load(token);
   }, [token]);
+
+  const remove = async (r: Row) => {
+    setConfirmPhone(null);
+    setBusy(true);
+    try {
+      const res = await fetch('/api/admin', {
+        method: 'DELETE',
+        headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ phone: r.phone }),
+      });
+      if (res.ok) {
+        setRows((list) => (list ?? []).filter((x) => x.phone !== r.phone));
+        setNotice(`${r.firstName} ${r.lastName} o‘chirildi.`);
+      } else setError(res.status === 401 ? 'Kalit noto‘g‘ri.' : 'O‘chirib bo‘lmadi.');
+    } catch {
+      setError('Internet yo‘q yoki server ishlamayapti.');
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const shown = useMemo(
     () => (rows ?? []).filter((r) => (showTest || !r.test) && matchesQuery(`${r.firstName} ${r.lastName} ${r.phone}`, q)),
@@ -157,6 +179,11 @@ export function AdminPage() {
             </BigButton>
           </div>
           {error && <p className="mt-[1rem] text-body font-bold text-warn">{error}</p>}
+          {notice && (
+            <p className="mt-[1rem] text-body font-bold text-success" role="status">
+              {notice}
+            </p>
+          )}
           {busy && !rows && <p className="mt-[1rem] text-body">Yuklanmoqda…</p>}
           {rows && (
             <>
@@ -165,7 +192,7 @@ export function AdminPage() {
                 <table className="w-full border-collapse bg-surface text-meta">
                   <thead className="bg-surface-2 text-left">
                     <tr>
-                      {['№', 'Ism', 'Familiya', 'Telefon', 'Ro‘yxatdan o‘tgan', 'Oxirgi kirish', 'O‘quvchilar'].map((h) => (
+                      {['№', 'Ism', 'Familiya', 'Telefon', 'Ro‘yxatdan o‘tgan', 'Oxirgi kirish', 'O‘quvchilar', ''].map((h) => (
                         <th key={h} scope="col" className="px-[1rem] py-[0.8rem] font-black">
                           {h}
                         </th>
@@ -185,6 +212,32 @@ export function AdminPage() {
                         <td className="whitespace-nowrap px-[1rem] py-[0.6rem]">{fmt(r.createdAt)}</td>
                         <td className="whitespace-nowrap px-[1rem] py-[0.6rem]">{fmt(r.lastSeen)}</td>
                         <td className="px-[1rem] py-[0.6rem] tabular-nums">{r.classSize}</td>
+                        <td className="whitespace-nowrap px-[1rem] py-[0.6rem]">
+                          {confirmPhone === r.phone ? (
+                            <span className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => void remove(r)}
+                                className="min-h-tap rounded-xl bg-warn px-4 font-extrabold text-on-primary"
+                                aria-label={`${r.firstName} ${r.lastName}: o‘chirishni tasdiqlash`}
+                              >
+                                Ha, o‘chirish
+                              </button>
+                              <button type="button" onClick={() => setConfirmPhone(null)} className="min-h-tap rounded-xl px-4 font-bold">
+                                Yo‘q
+                              </button>
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => setConfirmPhone(r.phone)}
+                              className="min-h-tap rounded-xl px-4 font-bold text-warn ring-[0.15rem] ring-line hover:ring-warn"
+                              aria-label={`${r.firstName} ${r.lastName}ni o‘chirish`}
+                            >
+                              O‘chirish
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

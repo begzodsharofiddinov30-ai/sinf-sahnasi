@@ -1,5 +1,5 @@
 // Sinf ro'yxati: faqat ismlar, faqat shu kompyuterda saqlanadi
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { BigButton } from '../components/BigButton';
 import { MAX_NAMES, parseNames } from './logic';
 import { useTools } from './ToolsProvider';
@@ -8,6 +8,11 @@ export function ClassList({ onSaved }: { onSaved?: () => void }) {
   const { names, setNames } = useTools();
   const [text, setText] = useState(names.join('\n'));
   const [saved, setSaved] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  // Ro'yxat boshqa joydan (bulutdan) yangilansa va o'qituvchi hozir yozmayotgan bo'lsa — ko'rsatamiz
+  useEffect(() => {
+    if (!dirty) setText(names.join('\n'));
+  }, [names, dirty]);
   const id = useId();
   const parsed = parseNames(text);
 
@@ -25,6 +30,7 @@ export function ClassList({ onSaved }: { onSaved?: () => void }) {
         onChange={(e) => {
           setText(e.target.value);
           setSaved(false);
+          setDirty(true);
         }}
         rows={8}
         className="w-full rounded-xl2 border-[0.15rem] border-line bg-surface p-[1rem] text-body font-bold outline-none focus:border-primary"
@@ -36,6 +42,7 @@ export function ClassList({ onSaved }: { onSaved?: () => void }) {
           onClick={() => {
             setNames(parsed);
             setSaved(true);
+            setDirty(false);
             onSaved?.();
           }}
         >

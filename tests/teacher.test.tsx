@@ -78,7 +78,7 @@ describe('ro‘yxatdan o‘tish (bulut)', () => {
     expect(JSON.parse(String((init as RequestInit).body))).toMatchObject({ firstName: 'dilnoza', phone: '+998901234567' });
     expect(loadTeacher()).toMatchObject({ phone: '+998901234567' });
     expect(readJSON('classList', [])).toEqual(['Aziz', 'Malika']);
-    expect(loadMeta()).toMatchObject({ updatedAt: 500, pending: false });
+    expect(loadMeta()).toMatchObject({ stamps: { classList: 500, favourites: 500 }, pending: false });
   });
 
   it('raqam boshqa ism bilan band bo‘lsa — xabar chiqadi, kirmaydi', async () => {
@@ -108,7 +108,7 @@ describe('ro‘yxatdan o‘tish (bulut)', () => {
     writeJSON('teacher', { ...teacherBody, since: '' });
     const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (_u, init) => {
       const body = JSON.parse(String((init as RequestInit).body));
-      return ok({ ok: true, teacher: teacherBody, data: body.data ?? {}, updatedAt: body.updatedAt ?? 0 });
+      return ok({ ok: true, teacher: teacherBody, data: body.data ?? {}, stamps: body.stamps ?? {}, updatedAt: 0 });
     });
     app();
     expect(await screen.findByText('Salom, Dilnoza Karimova')).toBeInTheDocument();
@@ -138,5 +138,71 @@ describe('ro‘yxatdan o‘tish (bulut)', () => {
     app();
     expect(screen.getByRole('heading', { name: 'Ma’lumotni to‘ldiring' })).toBeInTheDocument();
     expect(screen.getByLabelText('Ismingiz')).toHaveValue('Dilnoza');
+  });
+});
+
+describe('ochiq sahifa bulutdan yangilanadi', () => {
+  it('boshqa kompyuterdagi o‘zgarish sahifani qayta yuklamasdan ko‘rinadi', async () => {
+    const { ToolsProvider, useTools } = await import('../src/tools/ToolsProvider');
+    const { pullNow } = await import('../src/lib/cloud');
+    writeJSON('teacher', { ...teacherBody, since: '' });
+    writeJSON('classList', ['Aziz']);
+    writeJSON('cloudMeta', { stamps: { classList: 100 }, syncedAt: 1, pending: false });
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      ok({ ok: true, teacher: teacherBody, data: { classList: ['Aziz', 'Malika'] }, stamps: { classList: 200 }, updatedAt: 200 }),
+    );
+    function Names() {
+      const { names } = useTools();
+      return <p>{names.join(', ')}</p>;
+    }
+    render(
+      <ToolsProvider>
+        <Names />
+      </ToolsProvider>,
+    );
+    expect(screen.getByText('Aziz')).toBeInTheDocument();
+    await act(async () => {
+      await pullNow(teacherBody);
+    });
+    expect(screen.getByText('Aziz, Malika')).toBeInTheDocument();
+    expect(loadMeta().stamps.classList).toBe(200);
+  });
+
+  it('eski bulut javobi shu kompyuterdagi yangiroq bo‘limni bosib ketmaydi', async () => {
+    const { applyServer } = await import('../src/lib/cloud');
+    writeJSON('classList', ['Yangi']);
+    writeJSON('scores', [{ name: 'A', score: 1 }]);
+    writeJSON('cloudMeta', { stamps: { classList: 300, scores: 100 }, syncedAt: 1, pending: false });
+    const changed = applyServer({ classList: ['Eski'], scores: [{ name: 'A', score: 5 }] }, { classList: 200, scores: 250 }, 250);
+    expect(changed).toEqual(['scores']);
+    expect(readJSON('classList', null)).toEqual(['Yangi']);
+    expect(readJSON('scores', null)).toEqual([{ name: 'A', score: 5 }]);
+  });
+
+  it('hisobni o‘chirish — bulutga so‘rov, keyin shu kompyuterdan ham o‘chadi', async () => {
+    writeJSON('teacher', { ...teacherBody, since: '' });
+    writeJSON('classList', ['Aziz']);
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (u) =>
+      String(u) === '/api/delete'
+        ? ok({ ok: true, teacher: teacherBody, data: {}, stamps: {}, updatedAt: 0, deleted: true })
+        : ok({ ok: true, teacher: teacherBody, data: {}, stamps: {}, updatedAt: 0 }),
+    );
+    function Del() {
+      const { deleteAccount } = useTeacher();
+      return <button onClick={() => void deleteAccount()}>o‘chir</button>;
+    }
+    render(
+      <TeacherProvider>
+        <TeacherGate>
+          <Del />
+        </TeacherGate>
+      </TeacherProvider>,
+    );
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('button', { name: 'o‘chir' }));
+    expect(await screen.findByRole('heading', { name: 'Xush kelibsiz!' })).toBeInTheDocument();
+    expect(fetchMock.mock.calls.some(([u]) => u === '/api/delete')).toBe(true);
+    expect(readJSON('classList', null)).toBeNull();
+    expect(loadTeacher()).toBeNull();
   });
 });

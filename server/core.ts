@@ -6,6 +6,8 @@ export interface TeacherRow {
   firstName: string;
   lastName: string;
   data: Record<string, unknown>;
+  /** Har bir bo'lim oxirgi o'zgargan vaqt (ms) — bo'limlar alohida birlashtiriladi */
+  stamps: Record<string, number>;
   dataUpdatedAt: number;
   createdAt: string;
   lastSeen: string;
@@ -14,7 +16,8 @@ export interface TeacherRow {
 export interface Store {
   get(phone: string): Promise<TeacherRow | null>;
   create(row: Omit<TeacherRow, 'createdAt' | 'lastSeen'>): Promise<void>;
-  saveData(phone: string, data: Record<string, unknown>, updatedAt: number): Promise<void>;
+  saveData(phone: string, data: Record<string, unknown>, stamps: Record<string, number>, updatedAt: number): Promise<void>;
+  remove(phone: string): Promise<boolean>;
   touch(phone: string): Promise<void>;
   list(): Promise<TeacherRow[]>;
   /** Cheklov: shu kalit bo'yicha daqiqada `limit` tadan ko'p so'rov bo'lsa — false */
@@ -24,8 +27,9 @@ export interface Store {
 /** Bulutda saqlanadigan kalitlar (boshqa narsa qabul qilinmaydi) */
 export const SYNC_KEYS = ['settings', 'favourites', 'lastLesson', 'classList', 'scores'] as const;
 export const MAX_DATA_BYTES = 64 * 1024;
-/** Avtomatik testlar uchun raqam (admin ro'yxatida "sinov" deb belgilanadi) */
+/** Avtomatik testlar uchun raqamlar: +998 00 000 00 0X (admin ro'yxatida "sinov" deb belgilanadi) */
 export const TEST_PHONE = '+998000000000';
+export const isTestPhone = (p: string) => /^\+99800000000\d$/.test(p);
 
 const NAME_RE = /^[\p{L}‘’ʻʼ'`\- ]{2,30}$/u;
 
@@ -54,8 +58,69 @@ export function cleanData(raw: unknown): Record<string, unknown> | null {
 }
 
 export type Result =
-  | { status: 200; body: { ok: true; teacher: { firstName: string; lastName: string; phone: string }; data: Record<string, unknown>; updatedAt: number; created?: boolean } }
+  | {
+      status: 200;
+      body: {
+        ok: true;
+        teacher: { firstName: string; lastName: string; phone: string };
+        data: Record<string, unknown>;
+        stamps: Record<string, number>;
+        updatedAt: number;
+        created?: boolean;
+        deleted?: boolean;
+      };
+    }
   | { status: 400 | 401 | 403 | 404 | 409 | 413 | 429 | 503; body: { ok: false; error: string; message: string } };
+
+
+/** Eski yozuvlar (bo'lim vaqtlarisiz): har bir bo'lim umumiy vaqtni oladi */
+function effectiveStamps(row: Pick<TeacherRow, 'data' | 'stamps' | 'dataUpdatedAt'>): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const k of SYNC_KEYS) {
+    const v = row.stamps?.[k];
+    if (typeof v === 'number' && v > 0) out[k] = v;
+    else if (k in row.data && row.dataUpdatedAt > 0) out[k] = row.dataUpdatedAt;
+  }
+  return out;
+}
+
+function cleanStamps(raw: unknown, data: Record<string, unknown>, fallback: number): Record<string, number> {
+  const src = typeof raw === 'object' && raw !== null && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
+  const out: Record<string, number> = {};
+  for (const k of SYNC_KEYS) {
+    const v = src[k];
+    if (typeof v === 'number' && Number.isFinite(v) && v > 0) out[k] = Math.floor(v);
+    else if (k in data && fallback > 0) out[k] = fallback;
+  }
+  return out;
+}
+
+/**
+ * Bo'limma-bo'lim birlashtirish: har bir bo'limda yangiroq vaqtli qiymat yutadi.
+ * Serverda yo'q bo'lim — mijozdan olinadi.
+ */
+export function mergeData(
+  server: Pick<TeacherRow, 'data' | 'stamps' | 'dataUpdatedAt'>,
+  clientData: Record<string, unknown>,
+  clientStamps: Record<string, number>,
+): { data: Record<string, unknown>; stamps: Record<string, number>; changed: boolean } {
+  const data = { ...server.data };
+  const stamps = effectiveStamps(server);
+  let changed = false;
+  for (const k of SYNC_KEYS) {
+    if (!(k in clientData)) continue;
+    const cs = clientStamps[k] ?? 0;
+    const ss = stamps[k] ?? 0;
+    if (!(k in data) || cs > ss) {
+      if (JSON.stringify(data[k]) !== JSON.stringify(clientData[k]) || cs > ss) changed = true;
+      data[k] = clientData[k];
+      stamps[k] = Math.max(cs, ss, 1);
+    }
+  }
+  return { data, stamps, changed };
+}
+
+const maxStamp = (st: Record<string, number>) => Object.values(st).reduce((a, b) => Math.max(a, b), 0);
 
 const fail = (status: 400 | 401 | 403 | 404 | 409 | 413 | 429 | 503, error: string, message: string): Result => ({ status, body: { ok: false, error, message } });
 
@@ -74,25 +139,35 @@ function identity(input: Record<string, unknown>): Identity | Result {
   return { firstName, lastName, phone };
 }
 
-/** Kirish yoki ro'yxatdan o'tish (raqam yangi bo'lsa — yaratiladi) */
+/** Kirish yoki ro'yxatdan o'tish (raqam yangi bo'lsa — yaratiladi). Mijozdagi ma'lumot birlashtiriladi */
 export async function login(store: Store, input: Record<string, unknown>, ip: string): Promise<Result> {
   if (!(await store.hit(`login:${ip}`, 20))) return fail(429, 'rate', 'Juda ko‘p urinish. Bir daqiqadan keyin qayta urining.');
   const id = identity(input);
   if ('status' in id) return id;
+  const clientData = input.data === undefined ? {} : cleanData(input.data);
+  if (!clientData) return fail(413, 'bad-data', 'Ma’lumot noto‘g‘ri yoki juda katta.');
+  const fallback = typeof input.updatedAt === 'number' ? input.updatedAt : 0;
+  const clientStamps = cleanStamps(input.stamps, clientData, fallback);
   const row = await store.get(id.phone);
   if (!row) {
-    const data = cleanData(input.data) ?? {};
-    const updatedAt = typeof input.updatedAt === 'number' && Object.keys(data).length > 0 ? input.updatedAt : 0;
-    await store.create({ ...id, data, dataUpdatedAt: updatedAt });
-    return { status: 200, body: { ok: true, teacher: id, data, updatedAt, created: true } };
+    const stamps: Record<string, number> = {};
+    for (const k of Object.keys(clientData)) stamps[k] = Math.max(clientStamps[k] ?? 0, 1);
+    const updatedAt = maxStamp(stamps);
+    await store.create({ ...id, data: clientData, stamps, dataUpdatedAt: updatedAt });
+    return { status: 200, body: { ok: true, teacher: id, data: clientData, stamps, updatedAt, created: true } };
   }
   if (!sameName(row.firstName, id.firstName) || !sameName(row.lastName, id.lastName))
     return fail(409, 'name-mismatch', 'Bu telefon raqam boshqa ism-familiya bilan ro‘yxatdan o‘tgan. Ism-familiyani tekshiring.');
-  await store.touch(id.phone);
-  return { status: 200, body: { ok: true, teacher: { firstName: row.firstName, lastName: row.lastName, phone: row.phone }, data: row.data, updatedAt: row.dataUpdatedAt } };
+  const m = mergeData(row, clientData, clientStamps);
+  if (m.changed) await store.saveData(id.phone, m.data, m.stamps, maxStamp(m.stamps));
+  else await store.touch(id.phone);
+  return {
+    status: 200,
+    body: { ok: true, teacher: { firstName: row.firstName, lastName: row.lastName, phone: row.phone }, data: m.data, stamps: m.stamps, updatedAt: maxStamp(m.stamps) },
+  };
 }
 
-/** Sinxronlash: yangiroq bo'lsa saqlaydi, har doim joriy holatni qaytaradi (yangi hisob yaratmaydi) */
+/** Sinxronlash: bo'limma-bo'lim birlashtiradi va joriy holatni qaytaradi (yangi hisob yaratmaydi) */
 export async function sync(store: Store, input: Record<string, unknown>, ip: string): Promise<Result> {
   if (!(await store.hit(`sync:${ip}`, 60))) return fail(429, 'rate', 'Juda ko‘p so‘rov. Biroz kuting.');
   const id = identity(input);
@@ -100,19 +175,35 @@ export async function sync(store: Store, input: Record<string, unknown>, ip: str
   const row = await store.get(id.phone);
   if (!row) return fail(404, 'not-found', 'Bu raqam ro‘yxatdan o‘tmagan.');
   if (!sameName(row.firstName, id.firstName) || !sameName(row.lastName, id.lastName)) return fail(403, 'name-mismatch', 'Ism-familiya mos kelmadi.');
-  let { data, dataUpdatedAt } = row;
+  let data = row.data;
+  let stamps = effectiveStamps(row);
   if (input.data !== undefined) {
     const clean = cleanData(input.data);
     if (!clean) return fail(413, 'bad-data', 'Ma’lumot noto‘g‘ri yoki juda katta.');
-    const at = typeof input.updatedAt === 'number' && Number.isFinite(input.updatedAt) ? input.updatedAt : 0;
-    // Oxirgi o'zgarish yutadi
-    if (at > dataUpdatedAt) {
-      await store.saveData(id.phone, clean, at);
-      data = clean;
-      dataUpdatedAt = at;
-    } else await store.touch(id.phone);
+    // Eski mijozlar faqat umumiy vaqtni yuboradi
+    const fallback = typeof input.updatedAt === 'number' && Number.isFinite(input.updatedAt) ? input.updatedAt : 0;
+    const m = mergeData(row, clean, cleanStamps(input.stamps, clean, fallback));
+    data = m.data;
+    stamps = m.stamps;
+    if (m.changed) await store.saveData(id.phone, data, stamps, maxStamp(stamps));
+    else await store.touch(id.phone);
   } else await store.touch(id.phone);
-  return { status: 200, body: { ok: true, teacher: { firstName: row.firstName, lastName: row.lastName, phone: row.phone }, data, updatedAt: dataUpdatedAt } };
+  return {
+    status: 200,
+    body: { ok: true, teacher: { firstName: row.firstName, lastName: row.lastName, phone: row.phone }, data, stamps, updatedAt: maxStamp(stamps) },
+  };
+}
+
+/** O'qituvchi o'z hisobini butunlay o'chiradi */
+export async function deleteSelf(store: Store, input: Record<string, unknown>, ip: string): Promise<Result> {
+  if (!(await store.hit(`delete:${ip}`, 10))) return fail(429, 'rate', 'Juda ko‘p urinish. Biroz kuting.');
+  const id = identity(input);
+  if ('status' in id) return id;
+  const row = await store.get(id.phone);
+  if (!row) return fail(404, 'not-found', 'Bu raqam ro‘yxatdan o‘tmagan.');
+  if (!sameName(row.firstName, id.firstName) || !sameName(row.lastName, id.lastName)) return fail(403, 'name-mismatch', 'Ism-familiya mos kelmadi.');
+  await store.remove(id.phone);
+  return { status: 200, body: { ok: true, teacher: id, data: {}, stamps: {}, updatedAt: 0, deleted: true } };
 }
 
 /** Vaqtga bog'liq bo'lmagan taqqoslash (admin kaliti uchun) */
@@ -134,10 +225,25 @@ export interface AdminTeacher {
   test: boolean;
 }
 
-export async function adminList(store: Store, token: string | null, adminToken: string | undefined, ip: string) {
+async function adminCheck(store: Store, token: string | null, adminToken: string | undefined, ip: string) {
   if (!(await store.hit(`admin:${ip}`, 30))) return { status: 429 as const, body: { ok: false, error: 'rate' } };
   if (!adminToken || adminToken.length < 16) return { status: 503 as const, body: { ok: false, error: 'not-configured' } };
   if (!token || !safeEqual(token, adminToken)) return { status: 401 as const, body: { ok: false, error: 'unauthorized' } };
+  return null;
+}
+
+export async function adminDelete(store: Store, token: string | null, adminToken: string | undefined, ip: string, rawPhone: unknown) {
+  const denied = await adminCheck(store, token, adminToken, ip);
+  if (denied) return denied;
+  const phone = normalizePhone(rawPhone);
+  if (!phone) return { status: 400 as const, body: { ok: false, error: 'bad-phone' } };
+  const removed = await store.remove(phone);
+  return removed ? { status: 200 as const, body: { ok: true, deleted: phone } } : { status: 404 as const, body: { ok: false, error: 'not-found' } };
+}
+
+export async function adminList(store: Store, token: string | null, adminToken: string | undefined, ip: string) {
+  const denied = await adminCheck(store, token, adminToken, ip);
+  if (denied) return denied;
   const rows = await store.list();
   const teachers: AdminTeacher[] = rows.map((r) => ({
     firstName: r.firstName,
@@ -146,7 +252,7 @@ export async function adminList(store: Store, token: string | null, adminToken: 
     createdAt: r.createdAt,
     lastSeen: r.lastSeen,
     classSize: Array.isArray(r.data.classList) ? r.data.classList.length : 0,
-    test: r.phone === TEST_PHONE,
+    test: isTestPhone(r.phone),
   }));
   return { status: 200 as const, body: { ok: true, teachers } };
 }
@@ -165,9 +271,12 @@ export function memoryStore(): Store & { rows: Map<string, TeacherRow> } {
     async create(r) {
       rows.set(r.phone, { ...structuredClone(r), createdAt: now(), lastSeen: now() });
     },
-    async saveData(p, data, at) {
+    async saveData(p, data, stamps, at) {
       const r = rows.get(p)!;
-      rows.set(p, { ...r, data: structuredClone(data), dataUpdatedAt: at, lastSeen: now() });
+      rows.set(p, { ...r, data: structuredClone(data), stamps: { ...stamps }, dataUpdatedAt: at, lastSeen: now() });
+    },
+    async remove(p) {
+      return rows.delete(p);
     },
     async touch(p) {
       const r = rows.get(p);

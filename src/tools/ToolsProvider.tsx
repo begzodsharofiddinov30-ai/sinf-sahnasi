@@ -1,7 +1,7 @@
 // O'qituvchi asboblari holati: ro'yxat, tanlash, hisob, taymer (dars almashsa ham saqlanadi)
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { playSfx } from '../lib/audio';
-import { readJSON, writeJSON } from '../lib/storage';
+import { onExternalChange, readJSON, writeJSON } from '../lib/storage';
 import { DEFAULT_TEAMS, changeScore, pickNext } from './logic';
 
 export interface Team {
@@ -65,6 +65,19 @@ export function ToolsProvider({ children }: { children: ReactNode }) {
   const [timer, setTimer] = useState<TimerState>({ total: DEFAULT_TIMER, endAt: null, left: DEFAULT_TIMER, finished: false });
   const pickerRef = useRef(picker);
   pickerRef.current = picker;
+
+  // Bulutdan yangi ro'yxat yoki hisob kelsa
+  useEffect(
+    () =>
+      onExternalChange((keys) => {
+        if (keys.includes('classList')) {
+          const v = readJSON<unknown>('classList', []);
+          setNamesState(isStrings(v) ? v : []);
+        }
+        if (keys.includes('scores')) setTeams(loadTeams());
+      }),
+    [],
+  );
 
   useEffect(() => void writeJSON('picker', picker), [picker]);
   useEffect(() => void writeJSON('scores', teams), [teams]);

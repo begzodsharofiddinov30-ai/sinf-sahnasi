@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { adminList, cleanData, login, memoryStore, normalizePhone, safeEqual, sync, TEST_PHONE } from '../server/core';
+import { adminDelete, adminList, cleanData, deleteSelf, login, memoryStore, mergeData, normalizePhone, safeEqual, sync, TEST_PHONE } from '../server/core';
 
 const who = { firstName: 'Dilnoza', lastName: 'Karimova', phone: '90 123 45 67' };
 
@@ -94,5 +94,47 @@ describe('admin', () => {
     expect(safeEqual('abc', 'abc')).toBe(true);
     expect(safeEqual('abc', 'abd')).toBe(false);
     expect(safeEqual('abc', 'abcd')).toBe(false);
+  });
+});
+
+describe('bo‘limma-bo‘lim birlashtirish', () => {
+  it('ikki kompyuterdagi turli o‘zgarishlar ikkalasi ham saqlanadi', async () => {
+    const store = memoryStore();
+    await login(store, { ...who, data: { classList: ['A'], scores: [{ name: 'L', score: 0 }] }, stamps: { classList: 10, scores: 10 } }, 'ip');
+    // Uyda: sinf ro'yxati o'zgardi (vaqt 20)
+    await sync(store, { ...who, data: { classList: ['A', 'B'], scores: [{ name: 'L', score: 0 }] }, stamps: { classList: 20, scores: 10 } }, 'ip');
+    // Maktabda (eski ro'yxat bilan): hisob o'zgardi (vaqt 30)
+    const r = await sync(store, { ...who, data: { classList: ['A'], scores: [{ name: 'L', score: 5 }] }, stamps: { classList: 10, scores: 30 } }, 'ip');
+    expect(r.body).toMatchObject({ data: { classList: ['A', 'B'], scores: [{ name: 'L', score: 5 }] }, stamps: { classList: 20, scores: 30 } });
+  });
+
+  it('serverda yo‘q bo‘lim mijozdan olinadi; eski yozuvlar umumiy vaqtdan foydalanadi', () => {
+    const m = mergeData({ data: { classList: ['X'] }, stamps: {}, dataUpdatedAt: 50 }, { classList: ['Y'], favourites: ['f'] }, { classList: 40 });
+    expect(m.data).toEqual({ classList: ['X'], favourites: ['f'] });
+    expect(m.stamps).toEqual({ classList: 50, favourites: 1 });
+    expect(m.changed).toBe(true);
+    expect(mergeData({ data: { classList: ['X'] }, stamps: { classList: 50 }, dataUpdatedAt: 50 }, { classList: ['Y'] }, { classList: 40 }).changed).toBe(false);
+  });
+});
+
+describe('o‘chirish', () => {
+  it('o‘qituvchi faqat o‘z ismi bilan o‘z hisobini o‘chira oladi', async () => {
+    const store = memoryStore();
+    await login(store, who, 'ip');
+    expect((await deleteSelf(store, { ...who, firstName: 'Boshqa' }, 'ip')).status).toBe(403);
+    const r = await deleteSelf(store, who, 'ip');
+    expect(r.body).toMatchObject({ ok: true, deleted: true });
+    expect(store.rows.size).toBe(0);
+    expect((await deleteSelf(store, who, 'ip')).status).toBe(404);
+  });
+
+  it('admin faqat kalit bilan o‘chiradi', async () => {
+    const store = memoryStore();
+    const T = 't'.repeat(20);
+    await login(store, who, 'ip');
+    expect((await adminDelete(store, 'x'.repeat(20), T, 'ip', '+998901234567')).status).toBe(401);
+    expect((await adminDelete(store, T, T, 'ip', 'yomon')).status).toBe(400);
+    expect((await adminDelete(store, T, T, 'ip', '90 123 45 67')).status).toBe(200);
+    expect((await adminDelete(store, T, T, 'ip', '90 123 45 67')).status).toBe(404);
   });
 });

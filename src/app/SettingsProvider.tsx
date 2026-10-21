@@ -1,7 +1,7 @@
 // Sozlamalar konteksti: hammasi faqat shu kompyuterda (localStorage)
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { configureAudio } from '../lib/audio';
-import { writeJSON } from '../lib/storage';
+import { onExternalChange, writeJSON } from '../lib/storage';
 import { DEFAULT_SETTINGS, loadFavourites, loadLastLesson, loadSettings, type LastLesson, type Settings } from './settings';
 
 interface SettingsCtx {
@@ -31,6 +31,17 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     root.dataset.motion = settings.calmMode || settings.lightMode ? 'reduced' : 'full';
     root.dataset.perf = settings.lightMode ? 'light' : 'normal';
   }, [settings]);
+
+  // Bulutdan yangi ma'lumot kelsa — sahifani qayta yuklamasdan yangilaymiz
+  useEffect(
+    () =>
+      onExternalChange((keys) => {
+        if (keys.includes('settings')) setSettings(loadSettings());
+        if (keys.includes('favourites')) setFavourites(loadFavourites());
+        if (keys.includes('lastLesson')) setLast(loadLastLesson());
+      }),
+    [],
+  );
 
   const update = useCallback((patch: Partial<Settings>) => setSettings((s) => ({ ...s, ...patch })), []);
 

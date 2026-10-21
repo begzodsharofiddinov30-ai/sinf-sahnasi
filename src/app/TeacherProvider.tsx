@@ -2,7 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Mascot } from '../components/Mascot';
 import { RegisterPage } from '../pages/Register';
-import { clearLocalData, cloudEnabled, cloudLogin, loadMeta, pullOnStart, pushNow, setCloudStatus } from '../lib/cloud';
+import { clearLocalData, cloudEnabled, cloudLogin, deleteAccount as cloudDelete, loadMeta, pullNow, pushNow, setCloudStatus } from '../lib/cloud';
 import { clearTeacher, loadTeacher, normalizePhone, saveTeacher, type Teacher } from './teacher';
 
 export type RegisterResult = { ok: true; offline: boolean } | { ok: false; message: string };
@@ -11,12 +11,15 @@ interface TeacherCtx {
   teacher: Teacher | null;
   register: (firstName: string, lastName: string, phone?: string) => Promise<RegisterResult>;
   signOut: () => Promise<void>;
+  /** Bulutdan butunlay o'chirish va chiqish */
+  deleteAccount: () => Promise<{ ok: true } | { ok: false; message: string }>;
 }
 
 const Ctx = createContext<TeacherCtx>({
   teacher: null,
   register: async () => ({ ok: true, offline: true }),
   signOut: async () => {},
+  deleteAccount: async () => ({ ok: true }),
 });
 
 const withTimeout = <T,>(p: Promise<T>, ms: number, fallback: T) =>
@@ -33,7 +36,7 @@ export function TeacherProvider({ children }: { children: ReactNode }) {
     if (ready || !teacher) return;
     const id = identity(teacher);
     if (!id) return setReady(true);
-    void withTimeout(pullOnStart(id), 4000, false).finally(() => setReady(true));
+    void withTimeout(pullNow(id), 4000, false).finally(() => setReady(true));
     // faqat birinchi ochilishda
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -64,7 +67,19 @@ export function TeacherProvider({ children }: { children: ReactNode }) {
     setTeacher(null);
   }, [teacher]);
 
-  const value = useMemo(() => ({ teacher, register, signOut }), [teacher, register, signOut]);
+  const deleteAccount = useCallback(async () => {
+    const id = teacher ? identity(teacher) : null;
+    if (id && cloudEnabled()) {
+      const r = await cloudDelete(id);
+      if (!r.ok) return r;
+    }
+    clearLocalData();
+    clearTeacher();
+    setTeacher(null);
+    return { ok: true as const };
+  }, [teacher]);
+
+  const value = useMemo(() => ({ teacher, register, signOut, deleteAccount }), [teacher, register, signOut, deleteAccount]);
 
   return (
     <Ctx.Provider value={value}>

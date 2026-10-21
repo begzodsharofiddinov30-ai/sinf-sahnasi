@@ -1,9 +1,11 @@
 // Bulut: o'qituvchi ma'lumotlarini boshqa kompyuterlar bilan sinxronlash.
+// Har bir bo'lim (sinf ro'yxati, hisob, sozlamalar...) o'z vaqti bilan alohida birlashtiriladi.
 // Internet bo'lmasa — hamma narsa mahalliy ishlaydi, keyin yuklanadi.
-import { readJSON, readRaw, removeKey, withoutNotify, writeJSON } from './storage';
+import { emitExternal, readJSON, readRaw, removeKey, withoutNotify, writeJSON } from './storage';
 
 export const SYNC_KEYS = ['settings', 'favourites', 'lastLesson', 'classList', 'scores'] as const;
 export type SyncKey = (typeof SYNC_KEYS)[number];
+type Stamps = Record<string, number>;
 
 export interface CloudIdentity {
   firstName: string;
@@ -12,15 +14,23 @@ export interface CloudIdentity {
 }
 
 export interface CloudMeta {
-  /** Mahalliy ma'lumot oxirgi o'zgargan vaqt (ms) */
-  updatedAt: number;
+  /** Har bir bo'lim shu kompyuterda oxirgi o'zgargan (yoki bulutdan olingan) vaqt, ms */
+  stamps: Stamps;
   /** Oxirgi muvaffaqiyatli sinxronlash (ms) */
   syncedAt: number;
   /** Yuborilmagan o'zgarish bor */
   pending: boolean;
 }
 
-export type ApiOk = { ok: true; teacher: CloudIdentity; data: Record<string, unknown>; updatedAt: number; created?: boolean };
+export type ApiOk = {
+  ok: true;
+  teacher: CloudIdentity;
+  data: Record<string, unknown>;
+  stamps?: Stamps;
+  updatedAt: number;
+  created?: boolean;
+  deleted?: boolean;
+};
 export type ApiErr = { ok: false; error: string; message?: string };
 
 const META = 'cloudMeta';
@@ -34,12 +44,15 @@ export function cloudEnabled(): boolean {
 }
 
 export function loadMeta(): CloudMeta {
-  const m = readJSON<Partial<CloudMeta> | null>(META, null);
-  return {
-    updatedAt: typeof m?.updatedAt === 'number' ? m.updatedAt : 0,
-    syncedAt: typeof m?.syncedAt === 'number' ? m.syncedAt : 0,
-    pending: Boolean(m?.pending),
-  };
+  const m = readJSON<(Partial<CloudMeta> & { updatedAt?: number }) | null>(META, null);
+  let stamps: Stamps = {};
+  if (m?.stamps && typeof m.stamps === 'object') {
+    for (const [k, v] of Object.entries(m.stamps)) if (typeof v === 'number') stamps[k] = v;
+  } else if (typeof m?.updatedAt === 'number' && m.updatedAt > 0) {
+    // eski ko'rinish: bitta umumiy vaqt
+    stamps = Object.fromEntries(SYNC_KEYS.filter((k) => readRaw(k) != null).map((k) => [k, m.updatedAt as number]));
+  }
+  return { stamps, syncedAt: typeof m?.syncedAt === 'number' ? m.syncedAt : 0, pending: Boolean(m?.pending) };
 }
 
 function saveMeta(patch: Partial<CloudMeta>): CloudMeta {
@@ -106,24 +119,40 @@ export function changedSinceSnapshot(key: string): boolean {
   return true;
 }
 
-export function markDirty(): void {
-  saveMeta({ updatedAt: Date.now(), pending: true });
+/** Bo'lim shu kompyuterda o'zgardi */
+export function markDirty(key: string): void {
+  const meta = loadMeta();
+  saveMeta({ stamps: { ...meta.stamps, [key]: Math.max(Date.now(), (meta.stamps[key] ?? 0) + 1) }, pending: true });
   setCloudStatus('pending');
 }
 
-/** Bulutdan kelgan ma'lumotni yozadi (kuzatuvchilarga "o'zgarish" deb bildirmaydi) */
-export function applyRemote(data: Record<string, unknown>, updatedAt: number): void {
+/**
+ * Bulut javobini qo'llaydi: faqat bulutdagi vaqti yangiroq bo'limlar yoziladi.
+ * O'zgargan bo'limlar ro'yxatini qaytaradi (ochiq sahifa ularni qayta o'qiydi).
+ */
+export function applyServer(data: Record<string, unknown>, serverStamps: Stamps | undefined, updatedAt: number): string[] {
+  const meta = loadMeta();
+  const remote: Stamps = serverStamps ?? Object.fromEntries(Object.keys(data).map((k) => [k, updatedAt]));
+  const stamps = { ...meta.stamps };
+  const changed: string[] = [];
   withoutNotify(() => {
     for (const k of SYNC_KEYS) {
+      const rs = remote[k] ?? 0;
+      if (rs <= (stamps[k] ?? 0)) continue;
+      const before = readRaw(k);
       if (k in data) writeJSON(k, data[k]);
       else removeKey(k);
+      if (readRaw(k) !== before) changed.push(k);
+      stamps[k] = rs;
     }
   });
   takeSnapshot();
-  saveMeta({ updatedAt, syncedAt: Date.now(), pending: false });
+  saveMeta({ stamps, syncedAt: Date.now() });
+  if (changed.length) emitExternal(changed);
+  return changed;
 }
 
-/** Chiqishda: shu kompyuterdan o'qituvchi ma'lumotini olib tashlash (bulutda qoladi) */
+/** Chiqishda: shu kompyuterdan o'qituvchi ma'lumotini olib tashlash */
 export function clearLocalData(): void {
   withoutNotify(() => {
     for (const k of SYNC_KEYS) removeKey(k);
@@ -158,67 +187,61 @@ async function post(path: string, body: unknown, timeoutMs = 8000): Promise<ApiO
   }
 }
 
-/**
- * Kirish: bulutda ma'lumot bo'lsa va u yangiroq bo'lsa — shu kompyuterga yoziladi,
- * aks holda mahalliy ma'lumot bulutga yuboriladi.
- */
-export async function cloudLogin(id: CloudIdentity): Promise<ApiOk | ApiErr | null> {
+const payload = () => {
   const meta = loadMeta();
-  const local = collectLocal();
-  const res = await post('/api/login', { ...id, data: local, updatedAt: meta.updatedAt || Date.now() });
+  return { data: collectLocal(), stamps: meta.stamps };
+};
+
+/** Kirish: mahalliy va bulutdagi ma'lumot bo'limma-bo'lim birlashtiriladi */
+export async function cloudLogin(id: CloudIdentity): Promise<ApiOk | ApiErr | null> {
+  const res = await post('/api/login', { ...id, ...payload() });
   if (!res || !res.ok) return res;
-  if (res.updatedAt > 0 && Object.keys(res.data).length > 0 && (res.updatedAt >= meta.updatedAt || !hasLocalData())) {
-    applyRemote(res.data, res.updatedAt);
-  } else {
-    takeSnapshot();
-    if (!res.created && hasLocalData()) {
-      saveMeta({ updatedAt: meta.updatedAt || Date.now(), pending: true });
-      await pushNow(id);
-    } else saveMeta({ syncedAt: Date.now(), pending: false });
-  }
-  setCloudStatus(loadMeta().pending ? 'pending' : 'synced');
+  applyServer(res.data, res.stamps, res.updatedAt);
+  saveMeta({ pending: false, syncedAt: Date.now() });
+  setCloudStatus('synced');
   return res;
 }
 
-/** O'zgarishlarni yuborish; serverdagi yangiroq bo'lsa — uni oladi. true — bulut ma'lumoti yozildi */
-export async function pushNow(id: CloudIdentity): Promise<boolean> {
-  const meta = loadMeta();
-  setCloudStatus('syncing');
-  const res = await post('/api/sync', { ...id, data: collectLocal(), updatedAt: meta.updatedAt });
-  if (!res || !res.ok) {
-    setCloudStatus(res ? 'error' : 'pending');
-    return false;
-  }
-  if (res.updatedAt > meta.updatedAt) {
-    applyRemote(res.data, res.updatedAt);
+let inflight: Promise<boolean> | null = null;
+
+/** O'zgarishlarni yuborish va bulutdagi yangiliklarni olish. true — shu kompyuterdagi ma'lumot yangilandi */
+export function pushNow(id: CloudIdentity): Promise<boolean> {
+  // Bir vaqtda faqat bitta so'rov
+  inflight ??= (async () => {
+    setCloudStatus('syncing');
+    const res = await post('/api/sync', { ...id, ...payload() });
+    if (!res || !res.ok) {
+      setCloudStatus(res ? 'error' : loadMeta().pending ? 'pending' : 'local');
+      return false;
+    }
+    const changed = applyServer(res.data, res.stamps, res.updatedAt);
+    saveMeta({ pending: false, syncedAt: Date.now() });
     setCloudStatus('synced');
-    return true;
-  }
-  saveMeta({ pending: false, syncedAt: Date.now() });
-  setCloudStatus('synced');
-  return false;
+    return changed.length > 0;
+  })().finally(() => {
+    inflight = null;
+  });
+  return inflight;
 }
 
-/** Ochilishda: bulutdagi yangiroq ma'lumotni olish. true — ma'lumot yangilandi */
-export async function pullOnStart(id: CloudIdentity): Promise<boolean> {
-  const meta = loadMeta();
-  if (meta.pending) {
-    const changed = await pushNow(id);
-    takeSnapshot();
-    return changed;
-  }
+/** Bulutdagi yangiroq ma'lumotni olish (yuborilmagan o'zgarish bo'lsa — avval yuboradi) */
+export async function pullNow(id: CloudIdentity): Promise<boolean> {
+  if (loadMeta().pending) return pushNow(id);
+  setCloudStatus('syncing');
   const res = await post('/api/sync', id);
-  takeSnapshot();
   if (!res || !res.ok) {
-    setCloudStatus(res ? 'error' : meta.syncedAt ? 'pending' : 'local');
+    setCloudStatus(res ? 'error' : loadMeta().syncedAt ? 'pending' : 'local');
     return false;
   }
-  if (res.updatedAt > meta.updatedAt) {
-    applyRemote(res.data, res.updatedAt);
-    setCloudStatus('synced');
-    return true;
-  }
-  saveMeta({ syncedAt: Date.now() });
+  const changed = applyServer(res.data, res.stamps, res.updatedAt);
   setCloudStatus('synced');
-  return false;
+  return changed.length > 0;
+}
+
+/** Hisobni bulutdan butunlay o'chirish */
+export async function deleteAccount(id: CloudIdentity): Promise<{ ok: true } | { ok: false; message: string }> {
+  const res = await post('/api/delete', id);
+  if (!res) return { ok: false, message: 'Internet yo‘q yoki server javob bermadi. Keyinroq urinib ko‘ring.' };
+  if (!res.ok && res.error !== 'not-found') return { ok: false, message: res.message ?? 'O‘chirib bo‘lmadi.' };
+  return { ok: true };
 }
