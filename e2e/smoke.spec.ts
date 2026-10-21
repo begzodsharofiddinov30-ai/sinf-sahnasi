@@ -99,7 +99,7 @@ test.describe('ro‘yxatdan o‘tish', () => {
     await expect(c.getByRole('textbox', { name: 'Sinf ro‘yxati' })).toHaveValue(new RegExp(marker));
     await c.goto('/');
     await expect(c.getByRole('heading', { name: 'Sevimlilar' })).toBeVisible();
-    await expect(c.getByRole('link', { name: /Soat/ })).toBeVisible();
+    await expect(c.getByRole('link', { name: '2-sinf · Soat', exact: true })).toBeVisible();
   });
 
   test('o‘qituvchi hisobini butunlay o‘chiradi', async ({ page }) => {
