@@ -96,6 +96,7 @@ function TeacherSection() {
             <div className="flex gap-[1rem]">
               <BigButton
                 size="md"
+                data-testid="rename-save"
                 disabled={!!err || saving}
                 onClick={async () => {
                   setSaving(true);

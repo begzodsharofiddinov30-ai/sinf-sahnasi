@@ -129,7 +129,11 @@ test.describe('ro‘yxatdan o‘tish', () => {
     await a.goto('/#/sozlamalar');
     await a.getByRole('button', { name: 'Ismni o‘zgartirish' }).click();
     await a.getByRole('textbox', { name: 'Familiya', exact: true }).fill('Yangiism');
-    await a.getByRole('button', { name: 'Saqlash' }).first().click();
+    const renamed = a.waitForResponse((r) => r.url().includes('/api/rename'), { timeout: 30_000 });
+    await expect(a.getByTestId('rename-save')).toBeEnabled();
+    await a.getByTestId('rename-save').click();
+    const res = await renamed;
+    expect(res.status(), await res.text()).toBe(200);
     await expect(a.getByText('Sinov Yangiism')).toBeVisible({ timeout: 15_000 });
 
     // B: oynaga qaytganda yangi ism so'raladi
