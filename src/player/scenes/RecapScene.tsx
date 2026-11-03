@@ -21,10 +21,10 @@ export function RecapScene({ scene, step, revealed, onNext }: SceneProps<RecapDa
   }, [finished]);
 
   return (
-    <div className="flex h-full cursor-pointer items-center gap-[4vw] px-[5vw] py-[2vh]" onClick={onNext}>
-      <div className="flex flex-1 flex-col gap-[3vh]">
+    <div className="flex h-full cursor-pointer items-center gap-[4vw] portrait:flex-col portrait:justify-center portrait:gap-[calc(3*var(--vh))] px-[5vw] py-[calc(2*var(--vh))]" onClick={onNext}>
+      <div className="flex flex-1 flex-col gap-[calc(3*var(--vh))] portrait:flex-none">
         <h2 className="text-title font-black text-ink">{scene.title}</h2>
-        <ul className="flex flex-col gap-[2vh]">
+        <ul className="flex flex-col gap-[calc(2*var(--vh))]">
           <AnimatePresence initial={false}>
             {scene.points.slice(0, upTo + 1).map((p, i) => (
               <motion.li
@@ -34,7 +34,7 @@ export function RecapScene({ scene, step, revealed, onNext }: SceneProps<RecapDa
                 transition={{ duration: 0.35 }}
                 className="flex items-start gap-[1.5vw] text-lead font-extrabold text-ink"
               >
-                <span className="mt-[0.3vh] grid h-[3.2rem] w-[3.2rem] shrink-0 place-items-center rounded-full bg-success text-on-primary">
+                <span className="mt-[calc(0.3*var(--vh))] grid h-[3.2rem] w-[3.2rem] shrink-0 place-items-center rounded-full bg-success text-on-primary">
                   <Icon name="check" className="h-[2rem] w-[2rem]" />
                 </span>
                 <span>
@@ -45,8 +45,8 @@ export function RecapScene({ scene, step, revealed, onNext }: SceneProps<RecapDa
           </AnimatePresence>
         </ul>
       </div>
-      <div className="flex w-[34vw] flex-col items-center gap-[2vh] text-center">
-        <span className="block h-[38vh]">
+      <div className="flex w-[34vw] flex-col portrait:w-full items-center gap-[calc(2*var(--vh))] text-center">
+        <span className="block h-[calc(38*var(--vh))]">
           <Mascot mood={finished ? 'cheer' : 'happy'} className="h-full w-auto" />
         </span>
         <AnimatePresence>

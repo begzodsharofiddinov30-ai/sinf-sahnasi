@@ -13,6 +13,7 @@ Boshlang‘ich sinf (1–4) o‘qituvchisi uchun **doska yoki proyektorda** ko�
 - **O‘qituvchi asboblari:** tasodifiy o‘quvchi (takrorlamasdan), jamoalar hisobi, taymer.
 - **Ish varag‘i:** har bir mavzudan avtomatik tuziladi va A4 ga chop etiladi (javoblari bilan nusxasi ham bor).
 - **Sozlamalar:** ovoz, sokin rejim, yengil rejim (kuchsiz kompyuter uchun), yuqori kontrast, matn o‘lchami, sinf ro‘yxati.
+- **Telefon va planshetda ham:** sahifalar va dars sahnalari tik va yotiq ekranga moslashadi (gorizontal surilish yo‘q, tugmalar barmoq uchun kamida 44px). Kompyuter va proyektordagi ko‘rinish o‘zgarmaydi.
 - **Tekshiruv sahifasi:** darsdan oldin oflayn tayyorlik, ovoz, to‘liq ekran va ekran o‘lchamini tekshiradi.
 - **Onlayn kirish:** birinchi ochilishda o‘qituvchi **ism, familiya va telefon raqamini** yozadi — parol, SMS va email yo‘q. Boshqa kompyuterda xuddi shu ma’lumot bilan kirsa, **sinf ro‘yxati, sevimlilar, sozlamalar, oxirgi dars va hisob** bulutdan qaytadi. Internet bo‘lmasa ham ishlaydi — o‘zgarishlar keyin yuklanadi. Har bir bo‘lim alohida birlashtiriladi: uyda ro‘yxat, maktabda hisob o‘zgarsa — ikkalasi ham saqlanadi. Sayt ochiq turganda har daqiqada (va oynaga qaytganda) bulutdagi yangiliklar o‘zi ko‘rinadi.
 - **Administrator sahifasi:** `#/admin` — ro‘yxatdan o‘tgan o‘qituvchilar jadvali va CSV (Excel). Faqat `ADMIN_TOKEN` kaliti bilan ochiladi.

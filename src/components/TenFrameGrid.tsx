@@ -2,7 +2,7 @@
 export function TenFrameGrid({
   cells,
   onToggle,
-  cellClass = 'h-[11vh] w-[11vh]',
+  cellClass = 'h-[calc(11*var(--vh))] w-[calc(11*var(--vh))]',
 }: {
   cells: boolean[];
   onToggle?: (i: number) => void;
@@ -12,7 +12,7 @@ export function TenFrameGrid({
   return (
     <div className="flex flex-wrap items-center justify-center gap-[3vw]">
       {Array.from({ length: frames }, (_, f) => (
-        <div key={f} className="grid grid-cols-5 gap-[0.6vh] rounded-xl2 border-[0.3rem] border-ink bg-ink p-[0.6vh]" role="group" aria-label={`${f + 1}-ramka`}>
+        <div key={f} className="grid grid-cols-5 gap-[calc(0.6*var(--vh))] rounded-xl2 border-[0.3rem] border-ink bg-ink p-[calc(0.6*var(--vh))]" role="group" aria-label={`${f + 1}-ramka`}>
           {cells.slice(f * 10, f * 10 + 10).map((on, k) => {
             const i = f * 10 + k;
             const content = (

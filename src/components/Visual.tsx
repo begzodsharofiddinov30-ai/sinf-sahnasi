@@ -15,13 +15,13 @@ const CLOCK_VH: Record<VisualSize, number> = { lg: 42, md: 32, sm: 22 };
 // O'lcham soniga bog'liq emas (faqat 10 dan oshsa kichrayadi) — solishtirishda adashtirmasin
 function itemSize(count: number, size: VisualSize): string {
   const base = size === 'lg' ? 15 : size === 'md' ? 10 : 7;
-  return `${count > 10 ? base * 0.7 : base}vh`;
+  return `calc(${count > 10 ? base * 0.7 : base}*var(--vh))`;
 }
 
 /** O'nlik bloklar: ustun = 10 ta kub, alohida kub = 1 */
 function Blocks({ tens, ones, unit }: { tens: number; ones: number; unit: number }) {
-  const u = `${unit}vh`;
-  const cube = 'block rounded-[0.3vh] border-[0.25vh] border-[#1B4A80] bg-[#5A93E3]';
+  const u = `calc(${unit}*var(--vh))`;
+  const cube = 'block rounded-[calc(0.3*var(--vh))] border-[length:calc(0.25*var(--vh))] border-[#1B4A80] bg-[#5A93E3]';
   return (
     <div className="flex items-end gap-[1.2vw]" role="img" aria-label={`${tens} ta o‘nlik va ${ones} ta birlik`}>
       {Array.from({ length: tens }, (_, t) => (
@@ -32,9 +32,9 @@ function Blocks({ tens, ones, unit }: { tens: number; ones: number; unit: number
         </span>
       ))}
       {ones > 0 && (
-        <span className="ml-[1vw] grid grid-flow-col grid-rows-5 gap-[0.4vh]" aria-hidden="true">
+        <span className="ml-[1vw] grid grid-flow-col grid-rows-5 gap-[calc(0.4*var(--vh))]" aria-hidden="true">
           {Array.from({ length: ones }, (_, i) => (
-            <span key={i} className="block rounded-[0.3vh] border-[0.25vh] border-[#8A3B0B] bg-[#F2A33A]" style={{ width: u, height: u }} />
+            <span key={i} className="block rounded-[calc(0.3*var(--vh))] border-[length:calc(0.25*var(--vh))] border-[#8A3B0B] bg-[#F2A33A]" style={{ width: u, height: u }} />
           ))}
         </span>
       )}
@@ -51,7 +51,7 @@ export function Visual({ visual, size = 'lg' }: { visual: VisualData; size?: Vis
       for (let i = 0; i < visual.count; i += 5) groups.push(Array.from({ length: Math.min(5, visual.count - i) }, (_, k) => i + k));
       const s = itemSize(visual.count, size);
       return (
-        <div className="flex flex-col items-center gap-[1.5vh]" role="img" aria-label={`${visual.count} ta ${PICTURE_LABELS[visual.item]}`}>
+        <div className="flex flex-col items-center gap-[calc(1.5*var(--vh))]" role="img" aria-label={`${visual.count} ta ${PICTURE_LABELS[visual.item]}`}>
           {groups.map((g, gi) => (
             <div key={gi} className="flex gap-[1vw]">
               {g.map((i) => (
@@ -66,13 +66,13 @@ export function Visual({ visual, size = 'lg' }: { visual: VisualData; size?: Vis
     }
     case 'number':
       return (
-        <div className="font-black leading-none text-primary" style={{ fontSize: `${22 * scale}vh` }}>
+        <div className="font-black leading-none text-primary" style={{ fontSize: `calc(${22 * scale}*var(--vh))` }}>
           {visual.value}
         </div>
       );
     case 'tiles':
       return (
-        <div className="flex flex-wrap items-center justify-center gap-[1vw]" style={{ fontSize: `${(visual.items.length > 6 ? 6 : 10) * scale}vh` }}>
+        <div className="flex flex-wrap items-center justify-center gap-[1vw]" style={{ fontSize: `calc(${(visual.items.length > 6 ? 6 : 10) * scale}*var(--vh))` }}>
           {visual.items.map((t, i) => {
             const isOp = OPERATORS.has(t) && t !== '?';
             const hl = visual.highlight?.includes(i);
@@ -93,24 +93,35 @@ export function Visual({ visual, size = 'lg' }: { visual: VisualData; size?: Vis
           })}
         </div>
       );
-    case 'word':
+    case 'word': {
+      // So'zlar bo'yicha guruhlaymiz: tor ekranda gap so'z oralig'idan keyingi qatorga o'tadi
+      const words: { ch: string; i: number }[][] = [[]];
+      [...visual.text].forEach((ch, i) => (ch === ' ' ? words.push([]) : words[words.length - 1].push({ ch, i })));
       return (
-        <div className="flex gap-[0.08em] font-black" style={{ fontSize: `${14 * scale}vh` }} aria-label={visual.text}>
-          {[...visual.text].map((ch, i) => (
-            <span
-              key={i}
-              aria-hidden="true"
-              className={visual.highlight?.includes(i) ? 'rounded-[0.15em] bg-accent-soft px-[0.05em] text-warn underline decoration-[0.06em]' : 'text-ink'}
-            >
-              {ch}
+        <div
+          className="flex max-w-full flex-wrap justify-center gap-x-[0.35em] font-black"
+          style={{ fontSize: `calc(${14 * scale}*var(--vh))` }}
+          aria-label={visual.text}
+        >
+          {words.map((w, wi) => (
+            <span key={wi} className="flex gap-[0.08em]" aria-hidden="true">
+              {w.map(({ ch, i }) => (
+                <span
+                  key={i}
+                  className={visual.highlight?.includes(i) ? 'rounded-[0.15em] bg-accent-soft px-[0.05em] text-warn underline decoration-[0.06em]' : 'text-ink'}
+                >
+                  {ch}
+                </span>
+              ))}
             </span>
           ))}
         </div>
       );
+    }
     case 'picture':
       return (
-        <figure className="flex flex-col items-center gap-[1vh]">
-          <span style={{ width: `${28 * scale}vh`, height: `${28 * scale}vh` }} className="block">
+        <figure className="flex flex-col items-center gap-[calc(1*var(--vh))]">
+          <span style={{ width: `calc(${28 * scale}*var(--vh))`, height: `calc(${28 * scale}*var(--vh))` }} className="block">
             <Picture name={visual.item} title={visual.label ?? PICTURE_LABELS[visual.item]} />
           </span>
           {visual.label && <figcaption className="text-lead font-extrabold">{visual.label}</figcaption>}
@@ -118,7 +129,7 @@ export function Visual({ visual, size = 'lg' }: { visual: VisualData; size?: Vis
       );
     case 'clock':
       return (
-        <span className="block" style={{ width: `${CLOCK_VH[size]}vh`, height: `${CLOCK_VH[size]}vh` }}>
+        <span className="block" style={{ width: `calc(${CLOCK_VH[size]}*var(--vh))`, height: `calc(${CLOCK_VH[size]}*var(--vh))` }}>
           <ClockFace time={visual} className="h-full w-full" />
         </span>
       );
@@ -126,18 +137,18 @@ export function Visual({ visual, size = 'lg' }: { visual: VisualData; size?: Vis
       const cells = Array.from({ length: (visual.frames ?? 1) * 10 }, (_, i) => i < visual.count);
       return (
         <div role="img" aria-label={`O‘nlik ramkada ${visual.count} ta`}>
-          <TenFrameGrid cells={cells} cellClass={size === 'lg' ? 'h-[9vh] w-[9vh]' : size === 'md' ? 'h-[6.5vh] w-[6.5vh]' : 'h-[4.5vh] w-[4.5vh]'} />
+          <TenFrameGrid cells={cells} cellClass={size === 'lg' ? 'h-[calc(9*var(--vh))] w-[calc(9*var(--vh))]' : size === 'md' ? 'h-[calc(6.5*var(--vh))] w-[calc(6.5*var(--vh))]' : 'h-[calc(4.5*var(--vh))] w-[calc(4.5*var(--vh))]'} />
         </div>
       );
     }
     case 'blocks':
       return <Blocks tens={visual.tens} ones={visual.ones} unit={size === 'lg' ? 2.6 : size === 'md' ? 2 : 1.4} />;
     case 'groups': {
-      const s = `${size === 'lg' ? 7 : size === 'md' ? 5.5 : 4}vh`;
+      const s = `calc(${size === 'lg' ? 7 : size === 'md' ? 5.5 : 4}*var(--vh))`;
       return (
         <div className="flex flex-wrap items-center justify-center gap-[1.5vw]" role="img" aria-label={`${visual.groups} ta guruh, har birida ${visual.each} ta ${PICTURE_LABELS[visual.item]}`}>
           {Array.from({ length: visual.groups }, (_, g) => (
-            <div key={g} className="flex max-w-[calc(5*var(--s)+3vw)] flex-wrap justify-center gap-[0.4vw] rounded-[2vh] border-[0.4vh] border-dashed border-ink-soft/50 p-[1vh]" style={{ ['--s' as string]: s }}>
+            <div key={g} className="flex max-w-[calc(5*var(--s)+3vw)] flex-wrap justify-center gap-[0.4vw] rounded-[calc(2*var(--vh))] border-[length:calc(0.4*var(--vh))] border-dashed border-ink-soft/50 p-[calc(1*var(--vh))]" style={{ ['--s' as string]: s }}>
               {Array.from({ length: visual.each }, (_, i) => (
                 <span key={i} style={{ width: s, height: s }} className="block" aria-hidden="true">
                   <Picture name={visual.item} title="" />
@@ -150,7 +161,7 @@ export function Visual({ visual, size = 'lg' }: { visual: VisualData; size?: Vis
     }
     case 'mascot':
       return (
-        <span className="block" style={{ height: `${32 * scale}vh` }}>
+        <span className="block" style={{ height: `calc(${32 * scale}*var(--vh))` }}>
           <Mascot mood={visual.mood} className="h-full w-auto" />
         </span>
       );

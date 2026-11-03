@@ -35,7 +35,7 @@ function TimerChip({ onOpen }: { onOpen: () => void }) {
 }
 
 const toolBtn =
-  'grid min-h-tap min-w-tap place-items-center rounded-full bg-surface-2 text-[2rem] text-ink hover:bg-primary-soft aria-pressed:bg-primary aria-pressed:text-on-primary';
+  'grid min-h-tap min-w-tap shrink-0 place-items-center rounded-full bg-surface-2 text-[2rem] text-ink hover:bg-primary-soft aria-pressed:bg-primary aria-pressed:text-on-primary';
 
 export interface PlayerProps {
   lesson: Lesson;
@@ -116,12 +116,13 @@ export function Player({ lesson, title, initialScene = 0, onExit, onSceneChange 
   return (
     <div className="fixed inset-0 flex flex-col bg-bg text-ink" onPointerUp={releaseFocus} data-testid="player">
       {/* Yuqori panel */}
-      <header className="flex items-center gap-[1rem] px-[1.5rem] py-[0.8rem]">
+      <header className="flex items-center gap-[1rem] px-[1.5rem] py-[0.8rem] max-sm:gap-[0.6rem] max-sm:px-[1rem]">
         <button type="button" onClick={exit} className={toolBtn} aria-label="Darsdan chiqish (Esc)" title="Chiqish (Esc)">
           <Icon name="close" />
         </button>
-        <h1 className="min-w-0 flex-1 truncate text-meta font-extrabold text-ink-soft">{title}</h1>
-        <p className="text-meta font-extrabold tabular-nums text-ink-soft" aria-live="polite">
+        {/* Telefonda sarlavhaga joy yo'q — faqat ekran o'quvchi uchun */}
+        <h1 className="min-w-0 flex-1 truncate text-meta font-extrabold text-ink-soft max-sm:sr-only">{title}</h1>
+        <p className="whitespace-nowrap text-meta font-extrabold tabular-nums text-ink-soft max-sm:mr-auto" aria-live="polite">
           <span className="sr-only">Sahna </span>
           {state.index + 1} / {total}
         </p>
@@ -166,7 +167,7 @@ export function Player({ lesson, title, initialScene = 0, onExit, onSceneChange 
         <AnimatePresence initial={false}>
           <motion.section
             key={`${state.index}-${scene?.id}`}
-            className="absolute inset-0"
+            className="absolute inset-0 overflow-y-auto overscroll-contain"
             initial={{ opacity: 0, x: 40 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -40 }}
@@ -226,28 +227,29 @@ export function Player({ lesson, title, initialScene = 0, onExit, onSceneChange 
       </main>
 
       {/* Pastki panel */}
-      <footer className="flex items-center gap-[1.5rem] px-[1.5rem] py-[1rem]">
+      {/* Telefonda nuqtalar tepada alohida qatorda, tugmalar pastda teng enli */}
+      <footer className="flex items-center gap-[1.5rem] px-[1.5rem] py-[1rem] max-sm:flex-wrap max-sm:gap-y-[0.8rem] max-sm:pb-[max(1rem,env(safe-area-inset-bottom))]">
         <button
           type="button"
           onClick={() => dispatch({ type: 'prev' })}
           disabled={isAtStart(state)}
-          className="flex min-h-[5rem] items-center gap-2 rounded-xl2 bg-surface px-[1.6rem] text-body font-extrabold text-ink ring-[0.15rem] ring-line disabled:opacity-40"
+          className="flex min-h-[5rem] items-center justify-center gap-2 rounded-xl2 bg-surface px-[1.6rem] text-body font-extrabold text-ink ring-[0.15rem] ring-line disabled:opacity-40 max-sm:min-h-[48px] max-sm:flex-1"
           aria-label="Orqaga (←)"
         >
           <Icon name="back" /> Orqaga
         </button>
-        <div className="flex flex-1 justify-center">
+        <div className="flex flex-1 justify-center max-sm:order-first max-sm:basis-full">
           <ProgressDots total={total} current={state.index} onJump={(i) => dispatch({ type: 'goto', index: i })} />
         </div>
         {atEnd ? (
-          <button type="button" onClick={exit} className="flex min-h-[5rem] items-center gap-2 rounded-xl2 bg-success px-[2rem] text-body font-extrabold text-on-primary">
+          <button type="button" onClick={exit} className="flex min-h-[5rem] items-center justify-center gap-2 rounded-xl2 bg-success px-[2rem] text-body font-extrabold text-on-primary max-sm:min-h-[48px] max-sm:flex-1">
             <Icon name="check" /> Tugatish
           </button>
         ) : (
           <button
             type="button"
             onClick={next}
-            className="flex min-h-[5rem] items-center gap-2 rounded-xl2 bg-primary px-[2rem] text-body font-extrabold text-on-primary shadow-[0_0.3rem_0_rgb(0_0_0/0.18)]"
+            className="flex min-h-[5rem] items-center justify-center gap-2 rounded-xl2 bg-primary px-[2rem] text-body font-extrabold text-on-primary shadow-[0_0.3rem_0_rgb(0_0_0/0.18)] max-sm:min-h-[48px] max-sm:flex-1"
             aria-label="Keyingi (→, Space)"
           >
             Keyingi <Icon name="next" />

@@ -48,7 +48,7 @@ function OptionButton({
       type="button"
       animate={controls}
       onClick={() => onChoose(index)}
-      className={`relative flex ${option.visual && option.visual.kind !== 'number' ? 'min-h-[30vh]' : 'min-h-[16vh]'} flex-col items-center justify-center gap-[1vh] rounded-xl3 border-[0.3rem] px-[2vw] py-[2vh] font-black ${tone}`}
+      className={`relative flex ${option.visual && option.visual.kind !== 'number' ? 'min-h-[calc(30*var(--vh))]' : 'min-h-[calc(16*var(--vh))]'} flex-col items-center justify-center gap-[calc(1*var(--vh))] rounded-xl3 border-[0.3rem] px-[2vw] py-[calc(2*var(--vh))] font-black ${tone}`}
       aria-label={`${index + 1}-variant: ${option.label}${state === 'correct' ? ', to‘g‘ri' : state === 'tried' ? ', tanlangan, yana urinib ko‘ring' : ''}`}
     >
       <span aria-hidden="true" className="absolute left-[0.8rem] top-[0.6rem] text-meta font-extrabold text-ink-soft">
@@ -70,7 +70,7 @@ function OptionButton({
           {option.visual.kind !== 'number' && <span className="text-body">{option.label}</span>}
         </>
       ) : (
-        <span className={option.label.length <= 4 ? 'text-[9vh] leading-none' : 'text-lead'}>{option.label}</span>
+        <span className={option.label.length <= 4 ? 'text-[length:calc(9*var(--vh))] leading-none' : 'text-lead'}>{option.label}</span>
       )}
     </motion.button>
   );
@@ -108,9 +108,11 @@ export function ChooseAnswerScene({ scene, revealed }: SceneProps<ChooseData>) {
   });
 
   const cols = scene.options.length === 4 && scene.options.some((o) => o.visual) ? 'grid-cols-2' : scene.options.length === 2 ? 'grid-cols-2' : scene.options.length === 3 ? 'grid-cols-3' : 'grid-cols-4';
+  // Tik ekranda (telefon) ustunlar tor: matnli javoblar bittadan, rasmlilar ikkitadan
+  const portraitCols = scene.options.some((o) => o.visual) ? 'portrait:grid-cols-2' : 'portrait:grid-cols-1';
 
   return (
-    <div className="flex h-full flex-col items-center gap-[2vh] px-[4vw] py-[2vh]">
+    <div className="flex h-full flex-col items-center gap-[calc(2*var(--vh))] px-[4vw] py-[calc(2*var(--vh))]">
       <h2 className="text-center text-title font-black text-ink">
         <RichText text={scene.question} />
       </h2>
@@ -119,7 +121,7 @@ export function ChooseAnswerScene({ scene, revealed }: SceneProps<ChooseData>) {
           <Visual visual={scene.visual} size="md" />
         </div>
       )}
-      <div className={`grid w-full max-w-[90vw] gap-[2vw] ${cols}`} role="group" aria-label={plainText(scene.question)}>
+      <div className={`grid w-full max-w-[90vw] gap-[2vw] ${cols} ${portraitCols}`} role="group" aria-label={plainText(scene.question)}>
         {scene.options.map((o, i) => (
           <OptionButton
             key={i}

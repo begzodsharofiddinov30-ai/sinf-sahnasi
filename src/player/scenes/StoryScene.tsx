@@ -10,7 +10,7 @@ export function StoryScene({ scene, step, onNext }: SceneProps<StoryData>) {
   const i = Math.min(step, scene.pages.length - 1);
   const page = scene.pages[i];
   return (
-    <div className="flex h-full cursor-pointer flex-col items-center gap-[2vh] px-[5vw] py-[2vh]" onClick={onNext}>
+    <div className="flex h-full cursor-pointer flex-col items-center gap-[calc(2*var(--vh))] px-[5vw] py-[calc(2*var(--vh))]" onClick={onNext}>
       {scene.title && <h2 className="text-center text-title font-black text-ink">{scene.title}</h2>}
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
@@ -19,14 +19,14 @@ export function StoryScene({ scene, step, onNext }: SceneProps<StoryData>) {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -30 }}
           transition={{ duration: 0.35 }}
-          className="flex min-h-0 w-full flex-1 items-center justify-center gap-[4vw]"
+          className="flex min-h-0 w-full flex-1 items-center justify-center gap-[4vw] portrait:flex-col portrait:gap-[calc(3*var(--vh))]"
         >
           {page.visual && (
             <div className="flex shrink-0 items-center justify-center">
               <Visual visual={page.visual} size="md" />
             </div>
           )}
-          <p className="max-w-[60vw] text-[5vh] font-extrabold leading-snug text-ink">
+          <p className="max-w-[60vw] text-[length:calc(5*var(--vh))] portrait:max-w-full portrait:text-center portrait:text-lead font-extrabold leading-snug text-ink">
             <RichText text={page.text} />
           </p>
         </motion.div>

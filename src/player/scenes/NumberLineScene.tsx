@@ -63,14 +63,14 @@ export function NumberLineScene({ scene, revealed }: SceneProps<LineData>) {
   };
 
   return (
-    <div className="flex h-full flex-col items-center gap-[2vh] px-[3vw] py-[2vh]">
+    <div className="flex h-full flex-col items-center gap-[calc(2*var(--vh))] px-[3vw] py-[calc(2*var(--vh))]">
       <h2 className="text-center text-title font-black text-ink">
         <RichText text={scene.prompt} />
       </h2>
 
-      <div className="relative mx-auto mt-[4vh] h-[34vh] w-[calc(100%-6rem)]">
+      <div className="relative mx-auto mt-[calc(4*var(--vh))] h-[calc(34*var(--vh))] w-[calc(100%-6rem)]">
         {/* sakrash yoylari */}
-        <svg className="pointer-events-none absolute inset-x-0 top-0 h-[20vh] w-full" viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true">
+        <svg className="pointer-events-none absolute inset-x-0 top-0 h-[calc(20*var(--vh))] w-full" viewBox="0 0 100 20" preserveAspectRatio="none" aria-hidden="true">
           {arcs.map((a, i) => {
             const x1 = pct(a.from);
             const x2 = pct(a.to);
@@ -82,7 +82,7 @@ export function NumberLineScene({ scene, revealed }: SceneProps<LineData>) {
         {arcs.map((a, i) => (
           <span
             key={i}
-            className="absolute top-[2vh] -translate-x-1/2 rounded-full bg-accent-soft px-[0.6vw] text-meta font-black text-ink"
+            className="absolute top-[calc(2*var(--vh))] -translate-x-1/2 rounded-full bg-accent-soft px-[0.6vw] text-meta font-black text-ink"
             style={{ left: `${(pct(a.from) + pct(a.to)) / 2}%` }}
             aria-hidden="true"
           >
@@ -92,7 +92,7 @@ export function NumberLineScene({ scene, revealed }: SceneProps<LineData>) {
 
         {/* belgi */}
         <motion.span
-          className="absolute top-[6vh] block h-[12vh] -translate-x-1/2"
+          className="absolute top-[calc(6*var(--vh))] block h-[calc(12*var(--vh))] -translate-x-1/2"
           animate={{ left: `${pct(shownPos)}%` }}
           initial={false}
           transition={{ type: 'spring', stiffness: 260, damping: 22 }}
@@ -102,20 +102,20 @@ export function NumberLineScene({ scene, revealed }: SceneProps<LineData>) {
         </motion.span>
 
         {/* o'q */}
-        <div className="absolute inset-x-0 top-[20vh] h-[0.5vh] rounded-full bg-ink" />
+        <div className="absolute inset-x-0 top-[calc(20*var(--vh))] h-[calc(0.5*var(--vh))] rounded-full bg-ink" />
         {ticks.map((n) => (
           <button
             key={n}
             type="button"
             onClick={(e) => tapTick(n, e.currentTarget)}
-            className={`absolute top-[18.5vh] flex min-h-[10vh] min-w-[4rem] -translate-x-1/2 flex-col items-center rounded-xl px-[0.3vw] ${
+            className={`absolute top-[calc(18.5*var(--vh))] flex min-h-[calc(10*var(--vh))] min-w-[4rem] -translate-x-1/2 flex-col items-center rounded-xl px-[0.3vw] ${
               n === shownPos ? 'text-primary' : 'text-ink'
             }`}
             style={{ left: `${pct(n)}%` }}
             aria-label={`${n}${n === shownPos ? ', belgi shu yerda' : ''}`}
           >
-            <span className="block h-[3.5vh] w-[0.5vh] rounded-full bg-ink" />
-            <span className={`mt-[0.6vh] font-black leading-none ${ticks.length > 16 ? 'text-[3.6vh]' : 'text-[5vh]'} ${n === shownPos ? 'underline decoration-[0.4vh] underline-offset-[0.6vh]' : ''}`}>{n}</span>
+            <span className="block h-[calc(3.5*var(--vh))] w-[calc(0.5*var(--vh))] rounded-full bg-ink" />
+            <span className={`mt-[calc(0.6*var(--vh))] font-black leading-none ${ticks.length > 16 ? 'text-[length:calc(3.6*var(--vh))]' : 'text-[length:calc(5*var(--vh))]'} ${n === shownPos ? 'underline decoration-[calc(0.4*var(--vh))] underline-offset-[calc(0.6*var(--vh))]' : ''}`}>{n}</span>
           </button>
         ))}
       </div>

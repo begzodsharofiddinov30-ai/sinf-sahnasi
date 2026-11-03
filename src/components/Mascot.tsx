@@ -6,7 +6,7 @@ export const MASCOT_NAME = 'Bo‘tajon';
 const SAND = '#E8BE84';
 const SAND_DARK = '#C99A62';
 
-export function Mascot({ mood = 'neutral', className = 'h-[30vh] w-auto' }: { mood?: MascotMood; className?: string }) {
+export function Mascot({ mood = 'neutral', className = 'h-[calc(30*var(--vh))] w-auto' }: { mood?: MascotMood; className?: string }) {
   const happyEyes = mood === 'happy' || mood === 'cheer';
   // CSS animatsiya (framer-motion'siz — bosh sahifa yengilroq yuklanadi); kayfiyat o'zgarsa qayta o'ynaydi
   const anim = mood === 'cheer' ? 'mascot-cheer' : mood === 'think' ? 'mascot-think' : '';

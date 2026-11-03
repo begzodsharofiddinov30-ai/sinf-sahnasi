@@ -5,6 +5,8 @@
 /* Ranglar — RGB uchliklar (Tailwind shaffofligi uchun) */
 :root {
   --font-scale: 1;
+  /* Sahna o'lchamlari birligi: keng ekranda aynan 1vh, tik ekranda (telefon) enga qarab kichrayadi */
+  --vh: 1vh;
   --bg: 255 248 236;
   --surface: 255 255 255;
   --surface-2: 243 235 221;
@@ -43,6 +45,19 @@
 html {
   font-size: calc(var(--font-scale) * clamp(12px, min(1.5vh, 1.2vw), 40px));
   -webkit-text-size-adjust: 100%;
+}
+
+@media (max-aspect-ratio: 1/1) {
+  :root {
+    --vh: min(1vh, 0.9vw);
+  }
+}
+
+/* Telefon (tik yoki yotiq): 12px pastki chegara juda katta — 390px ekranda ~9px bo'ladi */
+@media (max-width: 640px), (max-height: 500px) {
+  html {
+    font-size: calc(var(--font-scale) * clamp(8px, min(2.4vw, 2.4vh), 12px));
+  }
 }
 
 body {

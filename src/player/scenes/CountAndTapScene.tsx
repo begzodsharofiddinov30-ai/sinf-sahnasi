@@ -25,8 +25,8 @@ export function CountAndTapScene({ scene, revealed }: SceneProps<CountData>) {
   // Kataklarga sig'adigan o'lcham (kamida 64px @1080p ≈ 6vh)
   const size =
     scene.layout === 'row'
-      ? `min(18vh, ${Math.floor(70 / (layout.cols + 1))}vw)`
-      : `max(6.5vh, min(${Math.floor(46 / layout.rows)}vh, ${Math.floor(56 / layout.cols)}vw))`;
+      ? `min(calc(18*var(--vh)), ${Math.floor(70 / (layout.cols + 1))}vw)`
+      : `max(calc(6.5*var(--vh)), min(calc(${Math.floor(46 / layout.rows)}*var(--vh)), ${Math.floor(56 / layout.cols)}vw))`;
 
   const tap = (i: number) => {
     if (revealed) return;
@@ -41,11 +41,11 @@ export function CountAndTapScene({ scene, revealed }: SceneProps<CountData>) {
   };
 
   return (
-    <div className="flex h-full flex-col px-[3vw] py-[2vh]">
+    <div className="flex h-full flex-col px-[3vw] py-[calc(2*var(--vh))]">
       <h2 className="text-center text-lead font-black text-ink">
         <RichText text={scene.prompt} />
       </h2>
-      <div className="flex min-h-0 flex-1 items-stretch gap-[2vw]">
+      <div className="flex min-h-0 flex-1 items-stretch gap-[2vw] portrait:flex-col">
         <div className="relative min-h-0 flex-1" role="group" aria-label={plainText(scene.prompt)}>
           {layout.positions.map((p, i) => {
             const n = shown.indexOf(i);
@@ -57,7 +57,7 @@ export function CountAndTapScene({ scene, revealed }: SceneProps<CountData>) {
                 onClick={() => tap(i)}
                 aria-label={counted ? `${n + 1}-${label}` : `${label}, sanalmagan`}
                 aria-pressed={counted}
-                className="absolute grid place-items-center rounded-full p-[0.4vh]"
+                className="absolute grid place-items-center rounded-full p-[calc(0.4*var(--vh))]"
                 style={{ left: `${p.x}%`, top: `${p.y}%`, width: size, height: size, x: '-50%', y: '-50%', rotate: p.rot }}
                 animate={counted ? { scale: [1, 1.25, 1] } : { scale: 1 }}
                 transition={{ duration: 0.35 }}
@@ -76,7 +76,7 @@ export function CountAndTapScene({ scene, revealed }: SceneProps<CountData>) {
             );
           })}
         </div>
-        <aside className="flex w-[18vw] min-w-[10rem] flex-col items-center justify-center gap-[2vh]">
+        <aside className="flex w-[18vw] min-w-[10rem] flex-col items-center justify-center gap-[calc(2*var(--vh))] portrait:w-full portrait:flex-row portrait:gap-[4vw]">
           <p className="text-meta font-bold text-ink-soft">Sanadik</p>
           <AnimatePresence mode="popLayout" initial={false}>
             <motion.p
@@ -84,15 +84,15 @@ export function CountAndTapScene({ scene, revealed }: SceneProps<CountData>) {
               initial={{ scale: 0.5, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.3 }}
-              className="text-[14vh] font-black leading-none text-primary"
+              className="text-[length:calc(14*var(--vh))] font-black leading-none text-primary"
               data-testid="count-total"
             >
               {shown.length}
             </motion.p>
           </AnimatePresence>
           {done ? (
-            <div className="flex flex-col items-center gap-[1vh] text-center">
-              <span className="block h-[16vh]">
+            <div className="flex flex-col items-center gap-[calc(1*var(--vh))] text-center">
+              <span className="block h-[calc(16*var(--vh))]">
                 <Mascot mood="cheer" className="h-full w-auto" />
               </span>
               <p className="text-body font-black text-success">

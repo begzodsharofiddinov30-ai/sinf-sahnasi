@@ -37,8 +37,9 @@ export default {
         xl2: '1.5rem',
         xl3: '2rem',
       },
-      minHeight: { tap: '4rem' },
-      minWidth: { tap: '4rem' },
+      // Telefonda rem kichrayadi — barmoq uchun kamida 44px qoladi
+      minHeight: { tap: 'max(4rem, 44px)' },
+      minWidth: { tap: 'max(4rem, 44px)' },
     },
   },
   plugins: [],

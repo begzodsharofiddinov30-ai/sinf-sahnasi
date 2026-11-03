@@ -49,15 +49,15 @@ export function BuildWordScene({ scene, revealed }: SceneProps<WordData>) {
   };
 
   const tileClass =
-    'grid min-h-[13vh] min-w-[13vh] place-items-center rounded-xl2 border-[0.25rem] px-[1.2vw] text-[8vh] font-black leading-none';
+    'grid min-h-[calc(13*var(--vh))] min-w-[calc(13*var(--vh))] place-items-center rounded-xl2 border-[0.25rem] px-[1.2vw] text-[length:calc(8*var(--vh))] font-black leading-none';
 
   return (
-    <div ref={root} className="flex h-full flex-col items-center gap-[2vh] px-[3vw] py-[2vh]">
+    <div ref={root} className="flex h-full flex-col items-center gap-[calc(2*var(--vh))] px-[3vw] py-[calc(2*var(--vh))]">
       <h2 className="text-center text-lead font-black text-ink">
         <RichText text={scene.prompt} />
       </h2>
       {scene.picture && (
-        <span className="block h-[18vh] w-[18vh]">
+        <span className="block h-[calc(18*var(--vh))] w-[calc(18*var(--vh))]">
           <Picture name={scene.picture} title={PICTURE_LABELS[scene.picture]} />
         </span>
       )}

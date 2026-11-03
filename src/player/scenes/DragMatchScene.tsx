@@ -47,7 +47,7 @@ export function DragMatchScene({ scene, revealed }: SceneProps<MatchData>) {
   };
 
   return (
-    <div ref={root} className="flex h-full flex-col items-center gap-[2vh] px-[3vw] py-[2vh]">
+    <div ref={root} className="flex h-full flex-col items-center gap-[calc(2*var(--vh))] px-[3vw] py-[calc(2*var(--vh))]">
       <h2 className="text-center text-lead font-black text-ink">
         <RichText text={scene.prompt} />
       </h2>
@@ -64,13 +64,13 @@ export function DragMatchScene({ scene, revealed }: SceneProps<MatchData>) {
               data-target={t}
               onClick={() => selected !== null && !done && attempt(selected, t)}
               aria-label={`${cardLabel(p.target)} joyi${done ? `: ${cardLabel(p.item)}` : ''}`}
-              className={`flex min-w-[14vw] flex-1 basis-0 flex-col items-center justify-between gap-[1vh] rounded-xl3 border-[0.25rem] bg-surface p-[1.5vh] ${
+              className={`flex min-w-[14vw] flex-1 basis-0 flex-col portrait:basis-[40%] items-center justify-between gap-[calc(1*var(--vh))] rounded-xl3 border-[0.25rem] bg-surface p-[calc(1.5*var(--vh))] ${
                 selected !== null && !done ? 'border-primary' : 'border-line'
               }`}
             >
               <CardView card={p.target} size="sm" />
               <span
-                className={`grid min-h-[12vh] w-full place-items-center rounded-xl2 border-[0.25rem] ${
+                className={`grid min-h-[calc(12*var(--vh))] w-full place-items-center rounded-xl2 border-[0.25rem] ${
                   done ? 'border-solid border-success bg-success-soft' : 'border-dashed border-ink-soft/40'
                 }`}
               >
@@ -82,7 +82,7 @@ export function DragMatchScene({ scene, revealed }: SceneProps<MatchData>) {
       </div>
 
       {/* Tanlanadigan narsalar */}
-      <div className="flex min-h-[14vh] flex-wrap items-center justify-center gap-[1.5vw]" role="group" aria-label="Narsalar">
+      <div className="flex min-h-[calc(14*var(--vh))] flex-wrap items-center justify-center gap-[1.5vw]" role="group" aria-label="Narsalar">
         {order
           .filter((i) => !isPlaced(i))
           .map((i) => (
@@ -95,7 +95,7 @@ export function DragMatchScene({ scene, revealed }: SceneProps<MatchData>) {
                   const zone = hit(x, y);
                   return zone !== null && attempt(i, Number(zone));
                 }}
-                className={`grid min-h-[12vh] min-w-[12vh] place-items-center rounded-xl2 border-[0.25rem] bg-surface px-[1.5vw] py-[1vh] shadow-[0_0.3rem_0_rgb(0_0_0/0.1)] ${
+                className={`grid min-h-[calc(12*var(--vh))] min-w-[calc(12*var(--vh))] place-items-center rounded-xl2 border-[0.25rem] bg-surface px-[1.5vw] py-[calc(1*var(--vh))] shadow-[0_0.3rem_0_rgb(0_0_0/0.1)] ${
                   selected === i ? 'border-primary ring-[0.3rem] ring-primary-soft' : 'border-line'
                 }`}
               >

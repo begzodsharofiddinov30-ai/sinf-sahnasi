@@ -35,19 +35,19 @@ export function ClockScene({ scene, revealed }: SceneProps<ClockData>) {
   };
 
   return (
-    <div className="flex h-full flex-col items-center gap-[1.5vh] px-[3vw] py-[2vh]">
+    <div className="flex h-full flex-col items-center gap-[calc(1.5*var(--vh))] px-[3vw] py-[calc(2*var(--vh))]">
       <h2 className="text-center text-title font-black text-ink">
         <RichText text={scene.prompt} />
       </h2>
       <div className="flex min-h-0 flex-1 items-center gap-[4vw]">
         <ClockFace
           time={shown}
-          className="h-[48vh] w-[48vh]"
+          className="h-[calc(48*var(--vh))] w-[calc(48*var(--vh))]"
           onDragHand={(hand, angle) =>
             change(hand === 'minute' ? { h: time.h, m: angleToMinute(angle) } : { h: angleToHour(angle - time.m * 0.5 + 15), m: time.m })
           }
         />
-        <div className="flex flex-col items-center gap-[1.5vh]">
+        <div className="flex flex-col items-center gap-[calc(1.5*var(--vh))]">
           <div className="flex items-center gap-[1vw]">
             <span className="w-[7rem] text-body font-bold text-ink-soft">Soat</span>
             <button type="button" className={ctrl} onClick={() => change(addMinutes(time, -60))} aria-label="Soat mili orqaga">
@@ -66,10 +66,10 @@ export function ClockScene({ scene, revealed }: SceneProps<ClockData>) {
               +5
             </button>
           </div>
-          <button type="button" onClick={() => setDigital((d) => !d)} aria-pressed={digital} className={`${ctrl} mt-[1vh] text-body`}>
+          <button type="button" onClick={() => setDigital((d) => !d)} aria-pressed={digital} className={`${ctrl} mt-[calc(1*var(--vh))] text-body`}>
             {digital ? 'Raqamni yashirish' : 'Raqamda ko‘rsatish'}
           </button>
-          <p className={`text-[10vh] font-black tabular-nums leading-none ${digital || revealed ? 'text-primary' : 'invisible'}`} aria-live="polite">
+          <p className={`text-[length:calc(10*var(--vh))] font-black tabular-nums leading-none ${digital || revealed ? 'text-primary' : 'invisible'}`} aria-live="polite">
             {formatClock(shown)}
           </p>
         </div>

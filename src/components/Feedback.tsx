@@ -23,11 +23,11 @@ export function Feedback({
   idleText?: string;
 }) {
   return (
-    <div className="flex min-h-[13vh] items-center justify-center gap-[2vw]" aria-live="polite">
+    <div className="flex min-h-[calc(13*var(--vh))] items-center justify-center gap-[2vw]" aria-live="polite">
       <AnimatePresence mode="wait" initial={false}>
         {state === 'done' || state === 'revealed' ? (
           <motion.div key="ok" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-[2vw]">
-            <span className="block h-[13vh]">
+            <span className="block h-[calc(13*var(--vh))]">
               <Mascot mood="cheer" className="h-full w-auto" />
             </span>
             <p className="text-lead font-black text-success">
@@ -37,7 +37,7 @@ export function Feedback({
           </motion.div>
         ) : state === 'retry' ? (
           <motion.div key={`try-${attempt}`} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-[2vw]">
-            <span className="block h-[13vh]">
+            <span className="block h-[calc(13*var(--vh))]">
               <Mascot mood="think" className="h-full w-auto" />
             </span>
             <p className="text-body font-extrabold text-ink">{retryText ?? DEFAULT_RETRY}</p>

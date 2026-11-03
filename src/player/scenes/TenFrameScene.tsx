@@ -37,14 +37,14 @@ export function TenFrameScene({ scene, revealed }: SceneProps<FrameData>) {
   };
 
   return (
-    <div className="flex h-full flex-col items-center gap-[2vh] px-[3vw] py-[2vh]">
+    <div className="flex h-full flex-col items-center gap-[calc(2*var(--vh))] px-[3vw] py-[calc(2*var(--vh))]">
       <h2 className="text-center text-title font-black text-ink">
         <RichText text={scene.prompt} />
       </h2>
       <div className="flex flex-1 items-center gap-[4vw]">
-        <TenFrameGrid cells={shown} onToggle={toggle} cellClass={size === 20 ? 'h-[10vh] w-[10vh]' : 'h-[13vh] w-[13vh]'} />
+        <TenFrameGrid cells={shown} onToggle={toggle} cellClass={size === 20 ? 'h-[calc(10*var(--vh))] w-[calc(10*var(--vh))]' : 'h-[calc(13*var(--vh))] w-[calc(13*var(--vh))]'} />
         <div className="flex flex-col items-center">
-          <span className="text-[14vh] font-black leading-none text-primary" data-testid="frame-count">
+          <span className="text-[length:calc(14*var(--vh))] font-black leading-none text-primary" data-testid="frame-count">
             {count}
           </span>
           {size === 20 && count > 10 && first === 10 && (

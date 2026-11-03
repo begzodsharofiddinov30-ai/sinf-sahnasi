@@ -6,7 +6,7 @@ type Hand = 'hour' | 'minute';
 
 export function ClockFace({
   time,
-  className = 'h-[40vh] w-[40vh]',
+  className = 'h-[calc(40*var(--vh))] w-[calc(40*var(--vh))]',
   onDragHand,
   hideHands = false,
 }: {

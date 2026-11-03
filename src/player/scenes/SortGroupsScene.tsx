@@ -48,12 +48,12 @@ export function SortGroupsScene({ scene, revealed }: SceneProps<SortData>) {
   };
 
   return (
-    <div ref={root} className="flex h-full flex-col items-center gap-[1.5vh] px-[3vw] py-[2vh]">
+    <div ref={root} className="flex h-full flex-col items-center gap-[calc(1.5*var(--vh))] px-[3vw] py-[calc(2*var(--vh))]">
       <h2 className="text-center text-lead font-black text-ink">
         <RichText text={scene.prompt} />
       </h2>
 
-      <div className="flex min-h-[14vh] flex-wrap items-center justify-center gap-[1.2vw]" role="group" aria-label="Narsalar">
+      <div className="flex min-h-[calc(14*var(--vh))] flex-wrap items-center justify-center gap-[1.2vw]" role="group" aria-label="Narsalar">
         {order
           .filter((i) => !isPlaced(i))
           .map((i) => (
@@ -66,7 +66,7 @@ export function SortGroupsScene({ scene, revealed }: SceneProps<SortData>) {
                   const zone = hit(x, y);
                   return zone !== null && attempt(i, Number(zone));
                 }}
-                className={`grid min-h-[11vh] min-w-[11vh] place-items-center rounded-xl2 border-[0.25rem] bg-surface px-[1.2vw] py-[0.8vh] shadow-[0_0.3rem_0_rgb(0_0_0/0.1)] ${
+                className={`grid min-h-[calc(11*var(--vh))] min-w-[calc(11*var(--vh))] place-items-center rounded-xl2 border-[0.25rem] bg-surface px-[1.2vw] py-[calc(0.8*var(--vh))] shadow-[0_0.3rem_0_rgb(0_0_0/0.1)] ${
                   selected === i ? 'border-primary ring-[0.3rem] ring-primary-soft' : 'border-line'
                 }`}
               >
@@ -87,14 +87,14 @@ export function SortGroupsScene({ scene, revealed }: SceneProps<SortData>) {
               data-group={gi}
               onClick={() => selected !== null && attempt(selected, gi)}
               aria-label={`${cardLabel(g)} guruhi, ichida ${inside.length} ta`}
-              className={`flex flex-col items-center gap-[1vh] rounded-xl3 border-[0.3rem] p-[1.5vh] ${GROUP_TONES[gi]} ${
+              className={`flex flex-col items-center gap-[calc(1*var(--vh))] rounded-xl3 border-[0.3rem] p-[calc(1.5*var(--vh))] ${GROUP_TONES[gi]} ${
                 selected !== null ? 'border-primary' : 'border-transparent'
               }`}
             >
               <CardView card={g} size="sm" textClass="text-lead" />
               <span className="flex flex-wrap items-center justify-center gap-[0.8vw]">
                 {inside.map(({ it, i }) => (
-                  <span key={i} className="grid place-items-center rounded-xl bg-surface/80 px-[0.6vw] py-[0.4vh]">
+                  <span key={i} className="grid place-items-center rounded-xl bg-surface/80 px-[0.6vw] py-[calc(0.4*var(--vh))]">
                     <CardView card={it} size="sm" textClass="text-meta" />
                   </span>
                 ))}

@@ -33,7 +33,7 @@ export function cardLabel(c: Card): string {
 export function CardView({ card, size = 'sm', textClass = 'text-body' }: { card: Card; size?: VisualSize; textClass?: string }) {
   const showLabel = card.label && !(card.visual?.kind === 'number' && String(card.visual.value) === card.label);
   return (
-    <span className="pointer-events-none flex flex-col items-center justify-center gap-[0.6vh]">
+    <span className="pointer-events-none flex flex-col items-center justify-center gap-[calc(0.6*var(--vh))]">
       {card.visual && <Visual visual={card.visual} size={size} />}
       {showLabel && <span className={`${textClass} font-black leading-tight`}>{card.label}</span>}
     </span>

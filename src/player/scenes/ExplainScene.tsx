@@ -13,9 +13,9 @@ export function ExplainScene({ scene, step, onNext }: SceneProps<ExplainData>) {
   const text = scene.steps[current]?.text ?? '';
 
   return (
-    <div className="flex h-full cursor-pointer flex-col items-center gap-[2vh] px-[4vw] py-[2vh]" onClick={onNext}>
+    <div className="flex h-full cursor-pointer flex-col items-center gap-[calc(2*var(--vh))] px-[4vw] py-[calc(2*var(--vh))]" onClick={onNext}>
       <h2 className="text-center text-title font-black text-ink">{scene.title}</h2>
-      <div className="flex min-h-0 w-full flex-1 flex-wrap items-center justify-center gap-x-[5vw] gap-y-[2vh]">
+      <div className="flex min-h-0 w-full flex-1 flex-wrap items-center justify-center gap-x-[5vw] gap-y-[calc(2*var(--vh))]">
         <AnimatePresence mode="popLayout" initial={false}>
           {visuals.map(({ key, visual }) => (
             <motion.div
